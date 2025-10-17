@@ -6,68 +6,20 @@
       "use": "@vercel/node"
     }
   ],
-  "routes": [
-    {
-      "src": "/people-profiles/collect-by-url",
-      "dest": "/server.js"
-    },
-    {
-      "src": "/people-profiles/discover-by-name",
-      "dest": "/server.js"
-    },
-    {
-      "src": "/company-info/collect-by-url",
-      "dest": "/server.js"
-    },
-    {
-      "src": "/job-listings/collect-by-url",
-      "dest": "/server.js"
-    },
-    {
-      "src": "/job-listings/discover-by-keyword",
-      "dest": "/server.js"
-    },
-    {
-      "src": "/job-listings/discover-by-url",
-      "dest": "/server.js"
-    },
-    {
-      "src": "/posts/collect-by-url",
-      "dest": "/server.js"
-    },
-    {
-      "src": "/posts/discover-by-company-url",
-      "dest": "/server.js"
-    },
-    {
-      "src": "/posts/discover-by-profile-url",
-      "dest": "/server.js"
-    },
-    {
-      "src": "/people-search/collect-by-url",
-      "dest": "/server.js"
-    },
-    {
-      "src": "/trigger-dataset",
-      "dest": "/server.js"
-    },
-    {
-      "src": "/get-snapshot/(.*)",
-      "dest": "/server.js"
-    },
-    {
-      "src": "/health",
-      "dest": "/server.js"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/public/$1"
-    }
-  ],
   "rewrites": [
-    {
-      "source": "/((?!api).*)",
-      "destination": "/public/$1"
-    }
+    { "source": "/people-profiles/collect-by-url", "destination": "/server.js" },
+    { "source": "/people-profiles/discover-by-name", "destination": "/server.js" },
+    { "source": "/company-info/collect-by-url", "destination": "/server.js" },
+    { "source": "/job-listings/collect-by-url", "destination": "/server.js" },
+    { "source": "/job-listings/discover-by-keyword", "destination": "/server.js" },
+    { "source": "/job-listings/discover-by-url", "destination": "/server.js" },
+    { "source": "/posts/collect-by-url", "destination": "/server.js" },
+    { "source": "/posts/discover-by-company-url", "destination": "/server.js" },
+    { "source": "/posts/discover-by-profile-url", "destination": "/server.js" },
+    { "source": "/people-search/collect-by-url", "destination": "/server.js" },
+    { "source": "/trigger-dataset", "destination": "/server.js" },
+    { "source": "/get-snapshot/(.*)", "destination": "/server.js" },
+    { "source": "/health", "destination": "/server.js" },
+    { "source": "/((?!api).*)", "destination": "/public/$1" }
   ]
 }
