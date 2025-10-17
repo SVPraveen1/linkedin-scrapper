@@ -84,75 +84,14 @@
               </div>
             </div>
 
-            <div class="form-row">
-              <div class="form-group">
-                <label for="country">Country</label>
-                <input
-                  type="text"
-                  id="country"
-                  name="country"
-                  placeholder="e.g., United States"
-                />
-              </div>
-
-              <div class="form-group">
-                <label for="time_range">Time Range</label>
-                <select id="time_range" name="time_range">
-                  <option value="">Any time</option>
-                  <option value="r86400">Past 24 hours</option>
-                  <option value="r604800">Past week</option>
-                  <option value="r2592000">Past month</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="form-row">
-              <div class="form-group">
-                <label for="job_type">Job Type</label>
-                <select id="job_type" name="job_type">
-                  <option value="">Any</option>
-                  <option value="F">Full-time</option>
-                  <option value="P">Part-time</option>
-                  <option value="C">Contract</option>
-                  <option value="T">Temporary</option>
-                  <option value="I">Internship</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label for="experience_level">Experience Level</label>
-                <select id="experience_level" name="experience_level">
-                  <option value="">Any</option>
-                  <option value="1">Internship</option>
-                  <option value="2">Entry level</option>
-                  <option value="3">Associate</option>
-                  <option value="4">Mid-Senior level</option>
-                  <option value="5">Director</option>
-                  <option value="6">Executive</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="form-row">
-              <div class="form-group">
-                <label for="remote">Remote</label>
-                <select id="remote" name="remote">
-                  <option value="">Any</option>
-                  <option value="1">On-site</option>
-                  <option value="2">Remote</option>
-                  <option value="3">Hybrid</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label for="company">Company</label>
-                <input
-                  type="text"
-                  id="company"
-                  name="company"
-                  placeholder="Filter by company name"
-                />
-              </div>
+            <div class="form-group">
+              <label for="country">Country</label>
+              <input
+                type="text"
+                id="country"
+                name="country"
+                placeholder="e.g., United States"
+              />
             </div>
 
             <button type="submit" class="btn-primary">Search Jobs</button>
@@ -253,12 +192,6 @@
               keyword: document.getElementById("keyword").value,
               location: document.getElementById("location").value,
               country: document.getElementById("country").value,
-              time_range: document.getElementById("time_range").value,
-              job_type: document.getElementById("job_type").value,
-              experience_level:
-                document.getElementById("experience_level").value,
-              remote: document.getElementById("remote").value,
-              company: document.getElementById("company").value,
             },
           ];
 
