@@ -1,0 +1,73 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "server.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/people-profiles/collect-by-url",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/people-profiles/discover-by-name",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/company-info/collect-by-url",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/job-listings/collect-by-url",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/job-listings/discover-by-keyword",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/job-listings/discover-by-url",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/posts/collect-by-url",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/posts/discover-by-company-url",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/posts/discover-by-profile-url",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/people-search/collect-by-url",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/trigger-dataset",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/get-snapshot/(.*)",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/health",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/public/$1"
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/((?!api).*)",
+      "destination": "/public/$1"
+    }
+  ]
+}

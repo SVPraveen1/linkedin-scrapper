@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Company Information - LinkedIn API</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>🏢 Company Information</h1>
+        <p>Retrieve detailed LinkedIn company data</p>
+        <a href="index.html" class="back-btn">← Back to Dashboard</a>
+      </header>
+
+      <div class="content">
+        <!-- Collect by URL -->
+        <div class="api-section">
+          <h2>Collect Company Info by URL</h2>
+          <p class="description">
+            Get comprehensive information about a company from its LinkedIn page
+          </p>
+
+          <form id="companyByUrlForm">
+            <div class="form-group">
+              <label for="company_url">Company URL *</label>
+              <input
+                type="text"
+                id="company_url"
+                name="company_url"
+                placeholder="https://www.linkedin.com/company/company-name"
+                required
+              />
+              <small>Enter the full LinkedIn company page URL</small>
+            </div>
+
+            <div class="form-group">
+              <label for="li_at_cookie"
+                >LinkedIn Cookie (li_at) - Optional</label
+              >
+              <input
+                type="text"
+                id="li_at_cookie"
+                name="li_at_cookie"
+                placeholder="Your LinkedIn li_at cookie for authentication"
+              />
+              <small>Optional: Provide for authenticated access</small>
+            </div>
+
+            <button type="submit" class="btn-primary">Get Company Info</button>
+          </form>
+
+          <div id="result" class="result-box"></div>
+        </div>
+
+        <!-- Info Section -->
+        <div class="info-section">
+          <h3>📋 What Data You'll Get:</h3>
+          <ul>
+            <li>Company name and description</li>
+            <li>Industry and company size</li>
+            <li>Location and headquarters</li>
+            <li>Website and social links</li>
+            <li>Follower count</li>
+            <li>Specialties and focus areas</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      document
+        .getElementById("companyByUrlForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const resultDiv = document.getElementById("result");
+          resultDiv.innerHTML =
+            '<div class="loading">⏳ Fetching company information...</div>';
+
+          const formData = {
+            company_url: document.getElementById("company_url").value,
+            li_at_cookie:
+              document.getElementById("li_at_cookie").value || undefined,
+          };
+
+          try {
+            const response = await fetch("/company-info/collect-by-url", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(formData),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+              resultDiv.innerHTML = `
+                        <div class="success">
+                            <h3>✓ Company Data Retrieved Successfully</h3>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                            ${
+                              data.data && data.data.snapshot_id
+                                ? `<p class="snapshot-info">Snapshot ID: <strong>${data.data.snapshot_id}</strong></p>`
+                                : ""
+                            }
+                        </div>
+                    `;
+            } else {
+              throw new Error(data.error || "Request failed");
+            }
+          } catch (error) {
+            resultDiv.innerHTML = `
+                    <div class="error">
+                        <h3>✗ Error Occurred</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+          }
+        });
+    </script>
+  </body>
+</html>

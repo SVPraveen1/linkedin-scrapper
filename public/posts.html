@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LinkedIn Posts - LinkedIn API</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>📝 LinkedIn Posts</h1>
+        <p>Collect and discover LinkedIn posts and content</p>
+        <a href="index.html" class="back-btn">← Back to Dashboard</a>
+      </header>
+
+      <div class="content">
+        <!-- Collect by URL -->
+        <div class="api-section">
+          <h2>Collect Posts by URL</h2>
+          <p class="description">
+            Retrieve specific LinkedIn posts using their URLs
+          </p>
+
+          <form id="postsByUrlForm">
+            <div class="form-group">
+              <label for="post_urls">Post URLs (one per line) *</label>
+              <textarea
+                id="post_urls"
+                name="post_urls"
+                rows="4"
+                placeholder="https://www.linkedin.com/posts/...&#10;https://www.linkedin.com/posts/..."
+                required
+              ></textarea>
+              <small
+                >Enter one or more LinkedIn post URLs, each on a new line</small
+              >
+            </div>
+
+            <div class="form-group">
+              <label for="li_at_cookie1"
+                >LinkedIn Cookie (li_at) - Optional</label
+              >
+              <input
+                type="text"
+                id="li_at_cookie1"
+                name="li_at_cookie"
+                placeholder="Your LinkedIn li_at cookie"
+              />
+            </div>
+
+            <button type="submit" class="btn-primary">Collect Posts</button>
+          </form>
+
+          <div id="result1" class="result-box"></div>
+        </div>
+
+        <!-- Discover by Company URL -->
+        <div class="api-section">
+          <h2>Discover Posts by Company URL</h2>
+          <p class="description">
+            Get recent posts from a company's LinkedIn page
+          </p>
+
+          <form id="postsByCompanyForm">
+            <div class="form-group">
+              <label for="company_url">Company URL *</label>
+              <input
+                type="text"
+                id="company_url"
+                name="company_url"
+                placeholder="https://www.linkedin.com/company/..."
+                required
+              />
+              <small>Enter the LinkedIn company page URL</small>
+            </div>
+
+            <div class="form-group">
+              <label for="li_at_cookie2"
+                >LinkedIn Cookie (li_at) - Optional</label
+              >
+              <input
+                type="text"
+                id="li_at_cookie2"
+                name="li_at_cookie"
+                placeholder="Your LinkedIn li_at cookie"
+              />
+            </div>
+
+            <button type="submit" class="btn-primary">Get Company Posts</button>
+          </form>
+
+          <div id="result2" class="result-box"></div>
+        </div>
+
+        <!-- Discover by Profile URL -->
+        <div class="api-section">
+          <h2>Discover Posts by Profile URL</h2>
+          <p class="description">
+            Retrieve posts from a LinkedIn user's profile with date filtering
+          </p>
+
+          <form id="postsByProfileForm">
+            <div class="form-group">
+              <label for="profile_url">Profile URL *</label>
+              <input
+                type="text"
+                id="profile_url"
+                name="profile_url"
+                placeholder="https://www.linkedin.com/in/username"
+                required
+              />
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="start_date">Start Date</label>
+                <input type="date" id="start_date" name="start_date" />
+              </div>
+
+              <div class="form-group">
+                <label for="end_date">End Date</label>
+                <input type="date" id="end_date" name="end_date" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="li_at_cookie3"
+                >LinkedIn Cookie (li_at) - Optional</label
+              >
+              <input
+                type="text"
+                id="li_at_cookie3"
+                name="li_at_cookie"
+                placeholder="Your LinkedIn li_at cookie"
+              />
+            </div>
+
+            <button type="submit" class="btn-primary">Get Profile Posts</button>
+          </form>
+
+          <div id="result3" class="result-box"></div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Collect Posts by URL
+      document
+        .getElementById("postsByUrlForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const resultDiv = document.getElementById("result1");
+          resultDiv.innerHTML =
+            '<div class="loading">Collecting posts...</div>';
+
+          const urlsText = document.getElementById("post_urls").value;
+          const urls = urlsText
+            .split("\n")
+            .map((u) => u.trim())
+            .filter((u) => u);
+
+          const formData = {
+            urls: urls,
+            li_at_cookie:
+              document.getElementById("li_at_cookie1").value || undefined,
+          };
+
+          try {
+            const response = await fetch("/posts/collect-by-url", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(formData),
+            });
+
+            const data = await response.json();
+            resultDiv.innerHTML = `
+                    <div class="success">
+                        <h3>✓ Posts Collected (${urls.length} URL${
+              urls.length > 1 ? "s" : ""
+            })</h3>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+          } catch (error) {
+            resultDiv.innerHTML = `
+                    <div class="error">
+                        <h3>✗ Error</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+          }
+        });
+
+      // Discover Posts by Company URL
+      document
+        .getElementById("postsByCompanyForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const resultDiv = document.getElementById("result2");
+          resultDiv.innerHTML =
+            '<div class="loading">Discovering company posts...</div>';
+
+          const formData = {
+            input: [{ url: document.getElementById("company_url").value }],
+            li_at_cookie:
+              document.getElementById("li_at_cookie2").value || undefined,
+          };
+
+          try {
+            const response = await fetch("/posts/discover-by-company-url", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(formData),
+            });
+
+            const data = await response.json();
+            resultDiv.innerHTML = `
+                    <div class="success">
+                        <h3>✓ Company Posts Retrieved</h3>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+          } catch (error) {
+            resultDiv.innerHTML = `
+                    <div class="error">
+                        <h3>✗ Error</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+          }
+        });
+
+      // Discover Posts by Profile URL
+      document
+        .getElementById("postsByProfileForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const resultDiv = document.getElementById("result3");
+          resultDiv.innerHTML =
+            '<div class="loading">Discovering profile posts...</div>';
+
+          const inputObj = {
+            url: document.getElementById("profile_url").value,
+          };
+
+          const startDate = document.getElementById("start_date").value;
+          const endDate = document.getElementById("end_date").value;
+
+          if (startDate) inputObj.start_date = startDate;
+          if (endDate) inputObj.end_date = endDate;
+
+          const formData = {
+            input: [inputObj],
+            li_at_cookie:
+              document.getElementById("li_at_cookie3").value || undefined,
+          };
+
+          try {
+            const response = await fetch("/posts/discover-by-profile-url", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(formData),
+            });
+
+            const data = await response.json();
+            resultDiv.innerHTML = `
+                    <div class="success">
+                        <h3>✓ Profile Posts Retrieved</h3>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+          } catch (error) {
+            resultDiv.innerHTML = `
+                    <div class="error">
+                        <h3>✗ Error</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+          }
+        });
+    </script>
+  </body>
+</html>

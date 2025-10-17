@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>People Profiles - LinkedIn API</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>👥 People Profiles</h1>
+        <p>Collect and discover LinkedIn user profiles</p>
+        <a href="index.html" class="back-btn">← Back to Dashboard</a>
+      </header>
+
+      <div class="content">
+        <!-- Collect by URL -->
+        <div class="api-section">
+          <h2>Collect Profile by URL</h2>
+          <p class="description">
+            Retrieve detailed information from a specific LinkedIn profile URL
+          </p>
+
+          <form id="collectByUrlForm">
+            <div class="form-group">
+              <label for="profile_url">Profile URL *</label>
+              <input
+                type="text"
+                id="profile_url"
+                name="profile_url"
+                placeholder="https://www.linkedin.com/in/username"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="li_at_cookie"
+                >LinkedIn Cookie (li_at) - Optional</label
+              >
+              <input
+                type="text"
+                id="li_at_cookie"
+                name="li_at_cookie"
+                placeholder="Your LinkedIn li_at cookie for authentication"
+              />
+            </div>
+
+            <button type="submit" class="btn-primary">Collect Profile</button>
+          </form>
+
+          <div id="result1" class="result-box"></div>
+        </div>
+
+        <!-- Discover by Name -->
+        <div class="api-section">
+          <h2>Discover Profile by Name</h2>
+          <p class="description">
+            Search for LinkedIn profiles using first and last name
+          </p>
+
+          <form id="discoverByNameForm">
+            <div class="form-group">
+              <label for="first_name">First Name *</label>
+              <input
+                type="text"
+                id="first_name"
+                name="first_name"
+                placeholder="John"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="last_name">Last Name *</label>
+              <input
+                type="text"
+                id="last_name"
+                name="last_name"
+                placeholder="Doe"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="li_at_cookie2"
+                >LinkedIn Cookie (li_at) - Optional</label
+              >
+              <input
+                type="text"
+                id="li_at_cookie2"
+                name="li_at_cookie"
+                placeholder="Your LinkedIn li_at cookie for authentication"
+              />
+            </div>
+
+            <button type="submit" class="btn-primary">Discover Profile</button>
+          </form>
+
+          <div id="result2" class="result-box"></div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Collect by URL
+      document
+        .getElementById("collectByUrlForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const resultDiv = document.getElementById("result1");
+          resultDiv.innerHTML = '<div class="loading">Loading...</div>';
+
+          const formData = {
+            profile_url: document.getElementById("profile_url").value,
+            li_at_cookie:
+              document.getElementById("li_at_cookie").value || undefined,
+          };
+
+          try {
+            const response = await fetch("/people-profiles/collect-by-url", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(formData),
+            });
+
+            const data = await response.json();
+            resultDiv.innerHTML = `
+                    <div class="success">
+                        <h3>✓ Request Successful</h3>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+          } catch (error) {
+            resultDiv.innerHTML = `
+                    <div class="error">
+                        <h3>✗ Error</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+          }
+        });
+
+      // Discover by Name
+      document
+        .getElementById("discoverByNameForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const resultDiv = document.getElementById("result2");
+          resultDiv.innerHTML = '<div class="loading">Loading...</div>';
+
+          const formData = {
+            first_name: document.getElementById("first_name").value,
+            last_name: document.getElementById("last_name").value,
+            li_at_cookie:
+              document.getElementById("li_at_cookie2").value || undefined,
+          };
+
+          try {
+            const response = await fetch("/people-profiles/discover-by-name", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(formData),
+            });
+
+            const data = await response.json();
+            resultDiv.innerHTML = `
+                    <div class="success">
+                        <h3>✓ Request Successful</h3>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+          } catch (error) {
+            resultDiv.innerHTML = `
+                    <div class="error">
+                        <h3>✗ Error</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+          }
+        });
+    </script>
+  </body>
+</html>

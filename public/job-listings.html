@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Job Listings - LinkedIn API</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>💼 Job Listings</h1>
+        <p>Search and collect LinkedIn job postings</p>
+        <a href="index.html" class="back-btn">← Back to Dashboard</a>
+      </header>
+
+      <div class="content">
+        <!-- Collect by URL -->
+        <div class="api-section">
+          <h2>Collect Job by URL</h2>
+          <p class="description">
+            Get details of a specific job posting from its LinkedIn URL
+          </p>
+
+          <form id="jobByUrlForm">
+            <div class="form-group">
+              <label for="job_url">Job URL *</label>
+              <input
+                type="text"
+                id="job_url"
+                name="job_url"
+                placeholder="https://www.linkedin.com/jobs/view/..."
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="li_at_cookie1"
+                >LinkedIn Cookie (li_at) - Optional</label
+              >
+              <input
+                type="text"
+                id="li_at_cookie1"
+                name="li_at_cookie"
+                placeholder="Your LinkedIn li_at cookie"
+              />
+            </div>
+
+            <button type="submit" class="btn-primary">Get Job Details</button>
+          </form>
+
+          <div id="result1" class="result-box"></div>
+        </div>
+
+        <!-- Discover by Keyword -->
+        <div class="api-section">
+          <h2>Discover Jobs by Keyword</h2>
+          <p class="description">
+            Search for job listings using keywords and filters
+          </p>
+
+          <form id="jobByKeywordForm">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="keyword">Keyword *</label>
+                <input
+                  type="text"
+                  id="keyword"
+                  name="keyword"
+                  placeholder="e.g., Software Engineer"
+                  required
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="location">Location *</label>
+                <input
+                  type="text"
+                  id="location"
+                  name="location"
+                  placeholder="e.g., New York, NY"
+                  required
+                />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="country">Country</label>
+                <input
+                  type="text"
+                  id="country"
+                  name="country"
+                  placeholder="e.g., United States"
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="time_range">Time Range</label>
+                <select id="time_range" name="time_range">
+                  <option value="">Any time</option>
+                  <option value="r86400">Past 24 hours</option>
+                  <option value="r604800">Past week</option>
+                  <option value="r2592000">Past month</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="job_type">Job Type</label>
+                <select id="job_type" name="job_type">
+                  <option value="">Any</option>
+                  <option value="F">Full-time</option>
+                  <option value="P">Part-time</option>
+                  <option value="C">Contract</option>
+                  <option value="T">Temporary</option>
+                  <option value="I">Internship</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="experience_level">Experience Level</label>
+                <select id="experience_level" name="experience_level">
+                  <option value="">Any</option>
+                  <option value="1">Internship</option>
+                  <option value="2">Entry level</option>
+                  <option value="3">Associate</option>
+                  <option value="4">Mid-Senior level</option>
+                  <option value="5">Director</option>
+                  <option value="6">Executive</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="remote">Remote</label>
+                <select id="remote" name="remote">
+                  <option value="">Any</option>
+                  <option value="1">On-site</option>
+                  <option value="2">Remote</option>
+                  <option value="3">Hybrid</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="company">Company</label>
+                <input
+                  type="text"
+                  id="company"
+                  name="company"
+                  placeholder="Filter by company name"
+                />
+              </div>
+            </div>
+
+            <button type="submit" class="btn-primary">Search Jobs</button>
+          </form>
+
+          <div id="result2" class="result-box"></div>
+        </div>
+
+        <!-- Discover by URL -->
+        <div class="api-section">
+          <h2>Discover Jobs by Search URL</h2>
+          <p class="description">
+            Use a LinkedIn job search URL to discover multiple job listings
+          </p>
+
+          <form id="jobBySearchUrlForm">
+            <div class="form-group">
+              <label for="search_url">Job Search URL *</label>
+              <input
+                type="text"
+                id="search_url"
+                name="search_url"
+                placeholder="https://www.linkedin.com/jobs/search/?keywords=..."
+                required
+              />
+              <small>Paste a LinkedIn job search results URL</small>
+            </div>
+
+            <div class="form-group">
+              <label for="li_at_cookie3"
+                >LinkedIn Cookie (li_at) - Optional</label
+              >
+              <input
+                type="text"
+                id="li_at_cookie3"
+                name="li_at_cookie"
+                placeholder="Your LinkedIn li_at cookie"
+              />
+            </div>
+
+            <button type="submit" class="btn-primary">Discover Jobs</button>
+          </form>
+
+          <div id="result3" class="result-box"></div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Collect by URL
+      document
+        .getElementById("jobByUrlForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const resultDiv = document.getElementById("result1");
+          resultDiv.innerHTML = '<div class="loading">Loading...</div>';
+
+          const formData = {
+            job_url: document.getElementById("job_url").value,
+            li_at_cookie:
+              document.getElementById("li_at_cookie1").value || undefined,
+          };
+
+          try {
+            const response = await fetch("/job-listings/collect-by-url", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(formData),
+            });
+
+            const data = await response.json();
+            resultDiv.innerHTML = `
+                    <div class="success">
+                        <h3>✓ Job Details Retrieved</h3>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+          } catch (error) {
+            resultDiv.innerHTML = `
+                    <div class="error">
+                        <h3>✗ Error</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+          }
+        });
+
+      // Discover by Keyword
+      document
+        .getElementById("jobByKeywordForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const resultDiv = document.getElementById("result2");
+          resultDiv.innerHTML = '<div class="loading">Searching jobs...</div>';
+
+          const searches = [
+            {
+              keyword: document.getElementById("keyword").value,
+              location: document.getElementById("location").value,
+              country: document.getElementById("country").value,
+              time_range: document.getElementById("time_range").value,
+              job_type: document.getElementById("job_type").value,
+              experience_level:
+                document.getElementById("experience_level").value,
+              remote: document.getElementById("remote").value,
+              company: document.getElementById("company").value,
+            },
+          ];
+
+          try {
+            const response = await fetch("/job-listings/discover-by-keyword", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ searches }),
+            });
+
+            const data = await response.json();
+            resultDiv.innerHTML = `
+                    <div class="success">
+                        <h3>✓ Job Search Complete</h3>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+          } catch (error) {
+            resultDiv.innerHTML = `
+                    <div class="error">
+                        <h3>✗ Error</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+          }
+        });
+
+      // Discover by Search URL
+      document
+        .getElementById("jobBySearchUrlForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const resultDiv = document.getElementById("result3");
+          resultDiv.innerHTML =
+            '<div class="loading">Discovering jobs...</div>';
+
+          const formData = {
+            search_url: document.getElementById("search_url").value,
+            li_at_cookie:
+              document.getElementById("li_at_cookie3").value || undefined,
+          };
+
+          try {
+            const response = await fetch("/job-listings/discover-by-url", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(formData),
+            });
+
+            const data = await response.json();
+            resultDiv.innerHTML = `
+                    <div class="success">
+                        <h3>✓ Jobs Discovered</h3>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+          } catch (error) {
+            resultDiv.innerHTML = `
+                    <div class="error">
+                        <h3>✗ Error</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+          }
+        });
+    </script>
+  </body>
+</html>

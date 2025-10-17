@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>People Search - LinkedIn API</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>🔍 People Search</h1>
+        <p>Search for LinkedIn profiles using advanced filters</p>
+        <a href="index.html" class="back-btn">← Back to Dashboard</a>
+      </header>
+
+      <div class="content">
+        <!-- Collect by URL -->
+        <div class="api-section">
+          <h2>Search People by URL</h2>
+          <p class="description">
+            Use a LinkedIn people search URL to find profiles matching your
+            criteria
+          </p>
+
+          <form id="peopleSearchForm">
+            <div class="form-group">
+              <label for="search_url">LinkedIn People Search URL *</label>
+              <input
+                type="text"
+                id="search_url"
+                name="search_url"
+                placeholder="https://www.linkedin.com/search/results/people/?keywords=..."
+                required
+              />
+              <small
+                >Paste a LinkedIn people search results URL with your
+                filters</small
+              >
+            </div>
+
+            <div class="form-group">
+              <label for="li_at_cookie"
+                >LinkedIn Cookie (li_at) - Optional</label
+              >
+              <input
+                type="text"
+                id="li_at_cookie"
+                name="li_at_cookie"
+                placeholder="Your LinkedIn li_at cookie for authentication"
+              />
+              <small>Recommended for better access to search results</small>
+            </div>
+
+            <button type="submit" class="btn-primary">Search People</button>
+          </form>
+
+          <div id="result" class="result-box"></div>
+        </div>
+
+        <!-- Help Section -->
+        <div class="info-section">
+          <h3>💡 How to Get a Search URL:</h3>
+          <ol>
+            <li>
+              Go to
+              <a href="https://www.linkedin.com" target="_blank"
+                >LinkedIn.com</a
+              >
+            </li>
+            <li>Click on the search bar and select "People"</li>
+            <li>
+              Apply your desired filters (location, company, school, etc.)
+            </li>
+            <li>Copy the URL from your browser's address bar</li>
+            <li>Paste it in the form above</li>
+          </ol>
+
+          <h3>🎯 Common Search Filters:</h3>
+          <ul>
+            <li>
+              <strong>Keywords:</strong> Job title, skills, or industry terms
+            </li>
+            <li>
+              <strong>Connections:</strong> 1st, 2nd, 3rd degree connections
+            </li>
+            <li><strong>Locations:</strong> City, state, or country</li>
+            <li><strong>Current company:</strong> Filter by employer</li>
+            <li><strong>Past company:</strong> Previous employers</li>
+            <li><strong>School:</strong> Educational institutions</li>
+            <li><strong>Industry:</strong> Business sector</li>
+          </ul>
+
+          <h3>📊 Example Search URLs:</h3>
+          <div class="code-block">
+            <code
+              >https://www.linkedin.com/search/results/people/?keywords=software%20engineer&location=San%20Francisco</code
+            >
+          </div>
+          <div class="code-block">
+            <code
+              >https://www.linkedin.com/search/results/people/?currentCompany=microsoft&keywords=product%20manager</code
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      document
+        .getElementById("peopleSearchForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const resultDiv = document.getElementById("result");
+          resultDiv.innerHTML =
+            '<div class="loading">🔍 Searching for people...</div>';
+
+          const formData = {
+            search_url: document.getElementById("search_url").value,
+            li_at_cookie:
+              document.getElementById("li_at_cookie").value || undefined,
+          };
+
+          try {
+            const response = await fetch("/people-search/collect-by-url", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(formData),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+              resultDiv.innerHTML = `
+                        <div class="success">
+                            <h3>✓ People Search Completed</h3>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                            ${
+                              data.data && data.data.snapshot_id
+                                ? `<p class="snapshot-info">Snapshot ID: <strong>${data.data.snapshot_id}</strong></p>
+                                 <p class="info-text">Use the Utilities page to retrieve the full results using this snapshot ID</p>`
+                                : ""
+                            }
+                        </div>
+                    `;
+            } else {
+              throw new Error(data.error || "Search request failed");
+            }
+          } catch (error) {
+            resultDiv.innerHTML = `
+                    <div class="error">
+                        <h3>✗ Error Occurred</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+          }
+        });
+    </script>
+  </body>
+</html>

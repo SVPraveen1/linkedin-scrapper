@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Utilities - LinkedIn API</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>⚙️ Utilities</h1>
+        <p>Snapshot retrieval, health checks, and system tools</p>
+        <a href="index.html" class="back-btn">← Back to Dashboard</a>
+      </header>
+
+      <div class="content">
+        <!-- Get Snapshot -->
+        <div class="api-section">
+          <h2>Retrieve Snapshot Data</h2>
+          <p class="description">
+            Get the results from a previously triggered dataset using its
+            snapshot ID
+          </p>
+
+          <form id="snapshotForm">
+            <div class="form-group">
+              <label for="snapshot_id">Snapshot ID *</label>
+              <input
+                type="text"
+                id="snapshot_id"
+                name="snapshot_id"
+                placeholder="Enter the snapshot ID from a previous API call"
+                required
+              />
+              <small
+                >The snapshot ID is returned when you trigger any dataset
+                collection</small
+              >
+            </div>
+
+            <button type="submit" class="btn-primary">Get Snapshot Data</button>
+          </form>
+
+          <div id="snapshotResult" class="result-box"></div>
+        </div>
+
+        <!-- Health Check -->
+        <div class="api-section">
+          <h2>Server Health Check</h2>
+          <p class="description">
+            Verify that the API server is running and responsive
+          </p>
+
+          <button id="healthCheckBtn" class="btn-secondary">
+            Check Server Health
+          </button>
+
+          <div id="healthResult" class="result-box"></div>
+        </div>
+
+        <!-- Legacy Trigger -->
+        <div class="api-section">
+          <h2>Legacy Dataset Trigger</h2>
+          <p class="description">
+            Backward compatible endpoint for triggering LinkedIn profile
+            datasets
+          </p>
+
+          <form id="legacyForm">
+            <div class="form-group">
+              <label for="legacy_url">Profile URL *</label>
+              <input
+                type="text"
+                id="legacy_url"
+                name="profile_url"
+                placeholder="https://www.linkedin.com/in/username"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="fetch_type">Fetch Type</label>
+              <select id="fetch_type" name="fetch_type">
+                <option value="profile">Profile</option>
+                <option value="posts">Posts</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="legacy_cookie"
+                >LinkedIn Cookie (li_at) - Optional</label
+              >
+              <input
+                type="text"
+                id="legacy_cookie"
+                name="li_at_cookie"
+                placeholder="Your LinkedIn li_at cookie"
+              />
+            </div>
+
+            <button type="submit" class="btn-primary">Trigger Dataset</button>
+          </form>
+
+          <div id="legacyResult" class="result-box"></div>
+        </div>
+
+        <!-- Info Section -->
+        <div class="info-section">
+          <h3>📖 About Snapshots</h3>
+          <p>
+            When you trigger a dataset collection (like collecting a profile or
+            searching for jobs), the API returns a <strong>snapshot_id</strong>.
+            This ID can be used to retrieve the actual data once the collection
+            is complete.
+          </p>
+
+          <h4>Typical Workflow:</h4>
+          <ol>
+            <li>Trigger a dataset collection using any of the API endpoints</li>
+            <li>Copy the <code>snapshot_id</code> from the response</li>
+            <li>Wait a few moments for data collection to complete</li>
+            <li>Use this page to retrieve the full results</li>
+          </ol>
+
+          <div class="code-block">
+            <strong>Example Response:</strong>
+            <pre>
+{
+  "success": true,
+  "data": {
+    "snapshot_id": "abc123xyz789"
+  }
+}</pre
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Get Snapshot
+      document
+        .getElementById("snapshotForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const resultDiv = document.getElementById("snapshotResult");
+          resultDiv.innerHTML =
+            '<div class="loading">⏳ Retrieving snapshot data...</div>';
+
+          const snapshotId = document.getElementById("snapshot_id").value;
+
+          try {
+            const response = await fetch(`/get-snapshot/${snapshotId}`);
+            const data = await response.json();
+
+            if (response.ok) {
+              const recordCount = data.total_records || 0;
+              resultDiv.innerHTML = `
+                        <div class="success">
+                            <h3>✓ Snapshot Retrieved Successfully</h3>
+                            <p class="info-text">Total Records: <strong>${recordCount}</strong></p>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+            } else {
+              throw new Error(data.error || "Failed to retrieve snapshot");
+            }
+          } catch (error) {
+            resultDiv.innerHTML = `
+                    <div class="error">
+                        <h3>✗ Error</h3>
+                        <p>${error.message}</p>
+                        <p class="info-text">The snapshot may not be ready yet. Please wait and try again.</p>
+                    </div>
+                `;
+          }
+        });
+
+      // Health Check
+      document
+        .getElementById("healthCheckBtn")
+        .addEventListener("click", async () => {
+          const resultDiv = document.getElementById("healthResult");
+          resultDiv.innerHTML =
+            '<div class="loading">Checking server health...</div>';
+
+          try {
+            const response = await fetch("/health");
+            const data = await response.json();
+
+            if (response.ok && data.status === "ok") {
+              resultDiv.innerHTML = `
+                        <div class="success">
+                            <h3>✓ Server is Healthy</h3>
+                            <p>Status: <strong>${data.status}</strong></p>
+                            <p class="info-text">All systems operational</p>
+                        </div>
+                    `;
+            } else {
+              throw new Error("Server returned unhealthy status");
+            }
+          } catch (error) {
+            resultDiv.innerHTML = `
+                    <div class="error">
+                        <h3>✗ Server Health Check Failed</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+          }
+        });
+
+      // Legacy Trigger
+      document
+        .getElementById("legacyForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const resultDiv = document.getElementById("legacyResult");
+          resultDiv.innerHTML =
+            '<div class="loading">Triggering dataset...</div>';
+
+          const formData = {
+            profile_url: document.getElementById("legacy_url").value,
+            fetch_type: document.getElementById("fetch_type").value,
+            li_at_cookie:
+              document.getElementById("legacy_cookie").value || undefined,
+          };
+
+          try {
+            const response = await fetch("/trigger-dataset", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(formData),
+            });
+
+            const data = await response.json();
+            resultDiv.innerHTML = `
+                    <div class="success">
+                        <h3>✓ Dataset Triggered</h3>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+          } catch (error) {
+            resultDiv.innerHTML = `
+                    <div class="error">
+                        <h3>✗ Error</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+          }
+        });
+    </script>
+  </body>
+</html>
