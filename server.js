@@ -6,7 +6,7 @@ const axios = require("axios");
 // Configuration
 const BASE_URL = "https://api.brightdata.com";
 const ACCESS_TOKEN =
-  "673ba9acfeb5b528935b926d427e6da0756b949184f05a71953402b35330dba8";
+  "8843602450317db399525247cd90e37b0565b3f3449a00401ed0c7b18a97a9a3";
 
 // Dataset IDs for different LinkedIn data types
 const DATASETS = {
