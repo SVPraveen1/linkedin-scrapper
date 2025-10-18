@@ -5,6 +5,82 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Instagram Scraper</title>
     <link rel="stylesheet" href="styles.css" />
+    <style>
+      /* Snapshot ID Display Styling */
+      .snapshot-info {
+        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+        border: 1px solid #bae6fd;
+        border-radius: 8px;
+        padding: 20px;
+        margin: 20px 0;
+      }
+
+      .snapshot-info label {
+        display: block;
+        font-weight: 600;
+        color: #0c4a6e;
+        margin-bottom: 8px;
+        font-size: 14px;
+      }
+
+      .snapshot-id-display {
+        background: white;
+        padding: 16px;
+        border-radius: 6px;
+        border: 1px solid #93c5fd;
+        text-align: center;
+      }
+
+      .snapshot-id-display code {
+        font-family: 'Courier New', monospace;
+        font-size: 16px;
+        color: #1e40af;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        user-select: all;
+        cursor: text;
+        display: block;
+        padding: 8px;
+      }
+
+      .next-steps {
+        margin-top: 24px;
+        padding: 20px;
+        background: linear-gradient(135deg, #fefce8 0%, #fef9c3 100%);
+        border: 1px solid #fde047;
+        border-radius: 8px;
+      }
+
+      .next-steps h4 {
+        color: #854d0e;
+        font-size: 16px;
+        margin-bottom: 12px;
+        font-weight: 700;
+      }
+
+      .next-steps ol {
+        margin: 0;
+        padding-left: 20px;
+        color: #713f12;
+      }
+
+      .next-steps li {
+        margin-bottom: 8px;
+        line-height: 1.6;
+      }
+
+      .next-steps a {
+        color: #0176d3;
+        font-weight: 600;
+        text-decoration: none;
+        border-bottom: 1px solid #0176d3;
+      }
+
+      .next-steps a:hover {
+        color: #014486;
+        border-bottom-color: #014486;
+      }
+    </style>
   </head>
   <body>
     <div class="container">
@@ -82,7 +158,7 @@
         .addEventListener("submit", async (e) => {
           e.preventDefault();
           const resultDiv = document.getElementById("igProfileResult");
-          resultDiv.innerHTML = '<p class="loading">⏳ Scraping...</p>';
+          resultDiv.innerHTML = '<div class="loading">Loading...</div>';
           const urls = document
             .getElementById("ig_profile_urls")
             .value.split("\n")
@@ -95,9 +171,19 @@
               body: JSON.stringify({ urls }),
             });
             const data = await response.json();
-            resultDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+            resultDiv.innerHTML = `
+              <div class="success">
+                <h3>✓ Request Successful</h3>
+                <pre>${JSON.stringify(data, null, 2)}</pre>
+              </div>
+            `;
           } catch (error) {
-            resultDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+            resultDiv.innerHTML = `
+              <div class="error">
+                <h3>✗ Error</h3>
+                <p>${error.message}</p>
+              </div>
+            `;
           }
         });
 
@@ -107,7 +193,7 @@
         .addEventListener("submit", async (e) => {
           e.preventDefault();
           const resultDiv = document.getElementById("igPostResult");
-          resultDiv.innerHTML = '<p class="loading">⏳ Scraping...</p>';
+          resultDiv.innerHTML = '<div class="loading">Loading...</div>';
           const urls = document
             .getElementById("ig_post_urls")
             .value.split("\n")
@@ -120,9 +206,19 @@
               body: JSON.stringify({ urls }),
             });
             const data = await response.json();
-            resultDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+            resultDiv.innerHTML = `
+              <div class="success">
+                <h3>✓ Request Successful</h3>
+                <pre>${JSON.stringify(data, null, 2)}</pre>
+              </div>
+            `;
           } catch (error) {
-            resultDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+            resultDiv.innerHTML = `
+              <div class="error">
+                <h3>✗ Error</h3>
+                <p>${error.message}</p>
+              </div>
+            `;
           }
         });
 
@@ -132,7 +228,7 @@
         .addEventListener("submit", async (e) => {
           e.preventDefault();
           const resultDiv = document.getElementById("igReelResult");
-          resultDiv.innerHTML = '<p class="loading">⏳ Scraping...</p>';
+          resultDiv.innerHTML = '<div class="loading">Loading...</div>';
           const urls = document
             .getElementById("ig_reel_urls")
             .value.split("\n")
@@ -145,9 +241,19 @@
               body: JSON.stringify({ urls }),
             });
             const data = await response.json();
-            resultDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+            resultDiv.innerHTML = `
+              <div class="success">
+                <h3>✓ Request Successful</h3>
+                <pre>${JSON.stringify(data, null, 2)}</pre>
+              </div>
+            `;
           } catch (error) {
-            resultDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+            resultDiv.innerHTML = `
+              <div class="error">
+                <h3>✗ Error</h3>
+                <p>${error.message}</p>
+              </div>
+            `;
           }
         });
 
@@ -156,25 +262,37 @@
         .getElementById("igDiscoverUsernameForm")
         .addEventListener("submit", async function (e) {
           e.preventDefault();
+          const resultDiv = document.getElementById("igDiscoverUsernameResult");
+          resultDiv.innerHTML = '<div class="loading">Loading...</div>';
+          
           const usernames = document
             .getElementById("ig_usernames")
             .value.split("\n")
             .map((u) => u.trim())
             .filter(Boolean);
-          // const user_names = usernames.map((user_name) => ({ user_name }));
-          const user_names = usernames; // no need to map to objects
-          const res = await fetch("/instagram-profile/discover-by-username", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ user_names }),
-          });
-          document.getElementById(
-            "igDiscoverUsernameResult"
-          ).innerHTML = `<pre>${JSON.stringify(
-            await res.json(),
-            null,
-            2
-          )}</pre>`;
+          const user_names = usernames;
+          
+          try {
+            const res = await fetch("/instagram-profile/discover-by-username", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ user_names }),
+            });
+            const data = await res.json();
+            resultDiv.innerHTML = `
+              <div class="success">
+                <h3>✓ Request Successful</h3>
+                <pre>${JSON.stringify(data, null, 2)}</pre>
+              </div>
+            `;
+          } catch (error) {
+            resultDiv.innerHTML = `
+              <div class="error">
+                <h3>✗ Error</h3>
+                <p>${error.message}</p>
+              </div>
+            `;
+          }
         });
     </script>
   </body>

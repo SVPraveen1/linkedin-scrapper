@@ -45,65 +45,123 @@
           <div id="snapshotResult" class="result-box"></div>
         </div>
 
-        <!-- Health Check -->
-        <div class="api-section">
-          <h2>Server Health Check</h2>
-          <p class="description">
-            Verify that the API server is running and responsive
-          </p>
+        <style>
+          /* Download buttons styling - Salesforce inspired subtle colors */
+          .result-wrapper {
+            position: relative;
+          }
 
-          <button id="healthCheckBtn" class="btn-secondary">
-            Check Server Health
-          </button>
+          .download-actions {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            display: flex;
+            gap: 8px;
+            z-index: 10;
+          }
 
-          <div id="healthResult" class="result-box"></div>
-        </div>
+          .btn-download {
+            padding: 8px 16px;
+            border: 1px solid;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-family: inherit;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+          }
 
-        <!-- Legacy Trigger -->
-        <div class="api-section">
-          <h2>Legacy Dataset Trigger</h2>
-          <p class="description">
-            Backward compatible endpoint for triggering LinkedIn profile
-            datasets
-          </p>
+          .btn-download:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+          }
 
-          <form id="legacyForm">
-            <div class="form-group">
-              <label for="legacy_url">Profile URL *</label>
-              <input
-                type="text"
-                id="legacy_url"
-                name="profile_url"
-                placeholder="https://www.linkedin.com/in/username"
-                required
-              />
-            </div>
+          .btn-download:active {
+            transform: translateY(0);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+          }
 
-            <div class="form-group">
-              <label for="fetch_type">Fetch Type</label>
-              <select id="fetch_type" name="fetch_type">
-                <option value="profile">Profile</option>
-                <option value="posts">Posts</option>
-              </select>
-            </div>
+          .btn-download .icon {
+            font-size: 14px;
+          }
 
-            <div class="form-group">
-              <label for="legacy_cookie"
-                >LinkedIn Cookie (li_at) - Optional</label
-              >
-              <input
-                type="text"
-                id="legacy_cookie"
-                name="li_at_cookie"
-                placeholder="Your LinkedIn li_at cookie"
-              />
-            </div>
+          /* JSON - Soft Blue */
+          .btn-json {
+            background: linear-gradient(135deg, #e0f2fe 0%, #dbeafe 100%);
+            border-color: #bfdbfe;
+            color: #0c4a6e;
+          }
 
-            <button type="submit" class="btn-primary">Trigger Dataset</button>
-          </form>
+          .btn-json:hover {
+            background: linear-gradient(135deg, #bfdbfe 0%, #93c5fd 100%);
+            border-color: #3b82f6;
+          }
 
-          <div id="legacyResult" class="result-box"></div>
-        </div>
+          /* CSV - Soft Green */
+          .btn-csv {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            border-color: #86efac;
+            color: #065f46;
+          }
+
+          .btn-csv:hover {
+            background: linear-gradient(135deg, #a7f3d0 0%, #6ee7b7 100%);
+            border-color: #10b981;
+          }
+
+          /* TXT - Soft Gray */
+          .btn-txt {
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+            border-color: #d1d5db;
+            color: #374151;
+          }
+
+          .btn-txt:hover {
+            background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%);
+            border-color: #9ca3af;
+          }
+
+          /* Loading state */
+          .btn-download.loading {
+            opacity: 0.6;
+            cursor: wait;
+            pointer-events: none;
+          }
+
+          /* Success animation */
+          @keyframes successPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+          }
+
+          .btn-download.success {
+            animation: successPulse 0.3s ease;
+          }
+
+          /* Adjust result box to accommodate buttons */
+          #snapshotResult .success {
+            padding-top: 56px;
+          }
+
+          /* Mobile responsive */
+          @media (max-width: 768px) {
+            .download-actions {
+              position: static;
+              margin-bottom: 12px;
+              justify-content: center;
+              flex-wrap: wrap;
+            }
+
+            #snapshotResult .success {
+              padding-top: 16px;
+            }
+          }
+        </style>
+
 
         <!-- Info Section -->
         <div class="info-section">
@@ -139,6 +197,180 @@
     </div>
 
     <script>
+      // Global variable to store snapshot data
+      let currentSnapshotData = null;
+      let currentSnapshotId = null;
+
+      // ========== DOWNLOAD HELPER FUNCTIONS ==========
+
+      // Function to flatten nested objects for CSV
+      function flattenObject(obj, parent = '', result = {}) {
+        for (let key in obj) {
+          if (obj.hasOwnProperty(key)) {
+            const newKey = parent ? `${parent}.${key}` : key;
+            if (typeof obj[key] === 'object' && obj[key] !== null && !Array.isArray(obj[key])) {
+              flattenObject(obj[key], newKey, result);
+            } else if (Array.isArray(obj[key])) {
+              result[newKey] = JSON.stringify(obj[key]);
+            } else {
+              result[newKey] = obj[key];
+            }
+          }
+        }
+        return result;
+      }
+
+      // Function to convert JSON to CSV
+      function jsonToCSV(data) {
+        if (!Array.isArray(data) || data.length === 0) {
+          return 'No data available';
+        }
+
+        // Flatten all objects
+        const flatData = data.map(item => flattenObject(item));
+
+        // Get all unique headers
+        const headers = [...new Set(flatData.flatMap(obj => Object.keys(obj)))];
+
+        // Create CSV header row
+        const csvHeaders = headers.map(h => `"${h}"`).join(',');
+
+        // Create CSV data rows
+        const csvRows = flatData.map(row => {
+          return headers.map(header => {
+            const value = row[header] !== undefined ? row[header] : '';
+            // Escape double quotes and wrap in quotes
+            const escaped = String(value).replace(/"/g, '""');
+            return `"${escaped}"`;
+          }).join(',');
+        });
+
+        return [csvHeaders, ...csvRows].join('\n');
+      }
+
+      // Function to convert JSON to readable text
+      function jsonToText(data) {
+        const timestamp = new Date().toLocaleString();
+        let text = `========================================\n`;
+        text += `SNAPSHOT DATA: ${currentSnapshotId}\n`;
+        text += `Retrieved: ${timestamp}\n`;
+        text += `Total Records: ${Array.isArray(data) ? data.length : 1}\n`;
+        text += `========================================\n\n`;
+
+        if (Array.isArray(data)) {
+          data.forEach((record, index) => {
+            text += `---------- Record ${index + 1} ----------\n`;
+            text += formatObject(record, 0);
+            text += `\n`;
+          });
+        } else {
+          text += formatObject(data, 0);
+        }
+
+        return text;
+      }
+
+      // Helper to format objects as text
+      function formatObject(obj, indent = 0) {
+        let text = '';
+        const spaces = '  '.repeat(indent);
+        
+        for (let key in obj) {
+          if (obj.hasOwnProperty(key)) {
+            const value = obj[key];
+            if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+              text += `${spaces}${key}:\n`;
+              text += formatObject(value, indent + 1);
+            } else if (Array.isArray(value)) {
+              text += `${spaces}${key}: ${JSON.stringify(value)}\n`;
+            } else {
+              text += `${spaces}${key}: ${value}\n`;
+            }
+          }
+        }
+        return text;
+      }
+
+      // Function to trigger download
+      function downloadFile(content, filename, mimeType) {
+        const blob = new Blob([content], { type: mimeType });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }
+
+      // Generate filename with timestamp
+      function generateFilename(extension) {
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+        const sanitizedId = currentSnapshotId.replace(/[^a-zA-Z0-9]/g, '_');
+        return `snapshot_${sanitizedId}_${timestamp}.${extension}`;
+      }
+
+      // ========== DOWNLOAD FUNCTIONS ==========
+
+      function downloadAsJSON() {
+        const btn = event.target.closest('.btn-json');
+        btn.classList.add('loading');
+        
+        try {
+          const content = JSON.stringify(currentSnapshotData, null, 2);
+          const filename = generateFilename('json');
+          downloadFile(content, filename, 'application/json');
+          
+          btn.classList.remove('loading');
+          btn.classList.add('success');
+          setTimeout(() => btn.classList.remove('success'), 300);
+        } catch (error) {
+          alert('Error downloading JSON: ' + error.message);
+          btn.classList.remove('loading');
+        }
+      }
+
+      function downloadAsCSV() {
+        const btn = event.target.closest('.btn-csv');
+        btn.classList.add('loading');
+        
+        try {
+          const dataArray = currentSnapshotData.data || currentSnapshotData;
+          const content = jsonToCSV(Array.isArray(dataArray) ? dataArray : [dataArray]);
+          const filename = generateFilename('csv');
+          downloadFile(content, filename, 'text/csv');
+          
+          btn.classList.remove('loading');
+          btn.classList.add('success');
+          setTimeout(() => btn.classList.remove('success'), 300);
+        } catch (error) {
+          alert('Error downloading CSV: ' + error.message);
+          btn.classList.remove('loading');
+        }
+      }
+
+      function downloadAsTXT() {
+        const btn = event.target.closest('.btn-txt');
+        btn.classList.add('loading');
+        
+        try {
+          const dataArray = currentSnapshotData.data || currentSnapshotData;
+          const content = jsonToText(Array.isArray(dataArray) ? dataArray : [dataArray]);
+          const filename = generateFilename('txt');
+          downloadFile(content, filename, 'text/plain');
+          
+          btn.classList.remove('loading');
+          btn.classList.add('success');
+          setTimeout(() => btn.classList.remove('success'), 300);
+        } catch (error) {
+          alert('Error downloading TXT: ' + error.message);
+          btn.classList.remove('loading');
+        }
+      }
+
+      // ========== GET SNAPSHOT ==========
+
       // Get Snapshot
       document
         .getElementById("snapshotForm")
@@ -149,17 +381,38 @@
             '<div class="loading">⏳ Retrieving snapshot data...</div>';
 
           const snapshotId = document.getElementById("snapshot_id").value;
+          currentSnapshotId = snapshotId;
 
           try {
             const response = await fetch(`/get-snapshot/${snapshotId}`);
             const data = await response.json();
 
             if (response.ok) {
+              // Store data globally for downloads
+              currentSnapshotData = data;
+              
               const recordCount = data.total_records || 0;
+              const fileSize = new Blob([JSON.stringify(data)]).size;
+              const fileSizeKB = (fileSize / 1024).toFixed(2);
+              
               resultDiv.innerHTML = `
-                        <div class="success">
+                        <div class="success result-wrapper">
+                            <div class="download-actions">
+                                <button class="btn-download btn-json" onclick="downloadAsJSON()" title="Download as JSON">
+                                    <span class="icon">📥</span>
+                                    <span>JSON</span>
+                                </button>
+                                <button class="btn-download btn-csv" onclick="downloadAsCSV()" title="Download as CSV">
+                                    <span class="icon">📊</span>
+                                    <span>CSV</span>
+                                </button>
+                                <button class="btn-download btn-txt" onclick="downloadAsTXT()" title="Download as Text">
+                                    <span class="icon">📄</span>
+                                    <span>TXT</span>
+                                </button>
+                            </div>
                             <h3>✓ Snapshot Retrieved Successfully</h3>
-                            <p class="info-text">Total Records: <strong>${recordCount}</strong></p>
+                            <p class="info-text">Total Records: <strong>${recordCount}</strong> • Size: <strong>${fileSizeKB} KB</strong></p>
                             <pre>${JSON.stringify(data, null, 2)}</pre>
                         </div>
                     `;
@@ -177,78 +430,7 @@
           }
         });
 
-      // Health Check
-      document
-        .getElementById("healthCheckBtn")
-        .addEventListener("click", async () => {
-          const resultDiv = document.getElementById("healthResult");
-          resultDiv.innerHTML =
-            '<div class="loading">Checking server health...</div>';
 
-          try {
-            const response = await fetch("/health");
-            const data = await response.json();
-
-            if (response.ok && data.status === "ok") {
-              resultDiv.innerHTML = `
-                        <div class="success">
-                            <h3>✓ Server is Healthy</h3>
-                            <p>Status: <strong>${data.status}</strong></p>
-                            <p class="info-text">All systems operational</p>
-                        </div>
-                    `;
-            } else {
-              throw new Error("Server returned unhealthy status");
-            }
-          } catch (error) {
-            resultDiv.innerHTML = `
-                    <div class="error">
-                        <h3>✗ Server Health Check Failed</h3>
-                        <p>${error.message}</p>
-                    </div>
-                `;
-          }
-        });
-
-      // Legacy Trigger
-      document
-        .getElementById("legacyForm")
-        .addEventListener("submit", async (e) => {
-          e.preventDefault();
-          const resultDiv = document.getElementById("legacyResult");
-          resultDiv.innerHTML =
-            '<div class="loading">Triggering dataset...</div>';
-
-          const formData = {
-            profile_url: document.getElementById("legacy_url").value,
-            fetch_type: document.getElementById("fetch_type").value,
-            li_at_cookie:
-              document.getElementById("legacy_cookie").value || undefined,
-          };
-
-          try {
-            const response = await fetch("/trigger-dataset", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(formData),
-            });
-
-            const data = await response.json();
-            resultDiv.innerHTML = `
-                    <div class="success">
-                        <h3>✓ Dataset Triggered</h3>
-                        <pre>${JSON.stringify(data, null, 2)}</pre>
-                    </div>
-                `;
-          } catch (error) {
-            resultDiv.innerHTML = `
-                    <div class="error">
-                        <h3>✗ Error</h3>
-                        <p>${error.message}</p>
-                    </div>
-                `;
-          }
-        });
     </script>
   </body>
 </html>
