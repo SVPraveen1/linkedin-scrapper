@@ -3,235 +3,403 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>LinkedIn Bright Data API Dashboard</title>
+    <title>🚀 Bright Data Scraper Hub - Premium API Dashboard</title>
+    <link rel="stylesheet" href="styles.css" />
     <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-
+      /* Dashboard-specific Salesforce-inspired styles */
       body {
-        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        min-height: 100vh;
-        padding: 20px;
+        background: #f3f2f2;
       }
 
-      .container {
-        max-width: 1200px;
-        margin: 0 auto;
-        background: white;
-        border-radius: 15px;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-        overflow: hidden;
-      }
-
-      header {
-        background: linear-gradient(135deg, #0077b5 0%, #00a0dc 100%);
+      .dashboard-header {
+        background: linear-gradient(135deg, #032e61 0%, #0176d3 100%);
         color: white;
-        padding: 30px;
+        padding: 48px 40px;
         text-align: center;
+        border-bottom: none;
       }
 
-      header h1 {
-        font-size: 2.5em;
-        margin-bottom: 10px;
+      .dashboard-header h1 {
+        font-size: 32px;
+        margin-bottom: 8px;
+        font-weight: 600;
+        letter-spacing: -0.5px;
       }
 
-      header p {
-        font-size: 1.1em;
-        opacity: 0.9;
+      .dashboard-header p {
+        font-size: 15px;
+        opacity: 0.95;
+        font-weight: 400;
+        margin-bottom: 16px;
+      }
+
+      .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+        margin-top: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+      }
+
+      .status-dot {
+        width: 8px;
+        height: 8px;
+        background: #4bca81;
+        border-radius: 50%;
+        animation: pulse 2s ease-in-out infinite;
+      }
+
+      @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.6; }
       }
 
       .nav-section {
-        background: #f8f9fa;
-        padding: 20px;
-        border-bottom: 2px solid #e9ecef;
+        background: #ffffff;
+        padding: 32px 40px 24px;
+        border-bottom: 1px solid #e5e5e5;
+      }
+
+      .nav-section h3 {
+        text-align: center;
+        color: #080707;
+        font-size: 24px;
+        font-weight: 700;
+        margin-bottom: 8px;
+        letter-spacing: -0.3px;
+      }
+
+      .nav-section p {
+        text-align: center;
+        color: #706e6b;
+        font-size: 15px;
+        font-weight: 400;
       }
 
       .api-categories {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 15px;
-        padding: 30px;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 24px;
+        padding: 48px 40px;
+        background: #f3f2f2;
       }
 
       .category-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border-radius: 10px;
-        padding: 25px;
+        background: var(--card-bg);
+        border: none;
+        border-radius: 12px;
+        padding: 40px 28px;
         text-align: center;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         cursor: pointer;
         text-decoration: none;
-        color: white;
-        display: block;
+        color: var(--text-primary);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .category-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 6px;
+        background: var(--card-accent);
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.3s ease;
       }
 
       .category-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        transform: translateY(-4px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
       }
 
-      .category-card.people {
-        background: linear-gradient(135deg, #0077b5 0%, #00a0dc 100%);
-      }
-
-      .category-card.company {
-        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-      }
-
-      .category-card.jobs {
-        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-      }
-
-      .category-card.posts {
-        background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-      }
-
-      .category-card.search {
-        background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-      }
-
-      .category-card.utilities {
-        background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
-      }
-
-      .category-card h2 {
-        font-size: 1.8em;
-        margin-bottom: 10px;
-      }
-
-      .category-card p {
-        font-size: 1em;
-        opacity: 0.9;
+      .category-card:hover::before {
+        transform: scaleX(1);
       }
 
       .icon {
-        font-size: 3em;
-        margin-bottom: 15px;
+        width: 64px;
+        height: 64px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--icon-bg);
+        border-radius: 50%;
+        font-size: 32px;
+      }
+
+      .category-card h2 {
+        font-size: 18px;
+        margin-bottom: 10px;
+        font-weight: 700;
+        letter-spacing: -0.2px;
+        color: #080707;
+      }
+
+      .category-card p {
+        font-size: 13px;
+        line-height: 1.6;
+        font-weight: 400;
+        color: #706e6b;
+        margin: 0;
+      }
+
+      /* Salesforce-inspired pastel card colors */
+      .category-card.people { 
+        --card-bg: linear-gradient(135deg, #e0f2fe 0%, #dbeafe 100%); 
+        --card-accent: #0176d3;
+        --icon-bg: #ffffff;
+      }
+      .category-card.company { 
+        --card-bg: linear-gradient(135deg, #fff7ed 0%, #fed7aa 100%); 
+        --card-accent: #ea8600;
+        --icon-bg: #ffffff;
+      }
+      .category-card.jobs { 
+        --card-bg: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); 
+        --card-accent: #1a73e8;
+        --icon-bg: #ffffff;
+      }
+      .category-card.posts { 
+        --card-bg: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); 
+        --card-accent: #0f9d58;
+        --icon-bg: #ffffff;
+      }
+      .category-card.search { 
+        --card-bg: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%); 
+        --card-accent: #9334e9;
+        --icon-bg: #ffffff;
+      }
+      .category-card.utilities { 
+        --card-bg: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%); 
+        --card-accent: #5f6368;
+        --icon-bg: #ffffff;
+      }
+      .category-card.maps { 
+        --card-bg: linear-gradient(135deg, #d1fae5 0%, #6ee7b7 100%); 
+        --card-accent: #34a853;
+        --icon-bg: #ffffff;
+      }
+      .category-card.youtube { 
+        --card-bg: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); 
+        --card-accent: #ff0000;
+        --icon-bg: #ffffff;
+      }
+      .category-card.instagram { 
+        --card-bg: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%); 
+        --card-accent: #e4405f;
+        --icon-bg: #ffffff;
+      }
+      .category-card.facebook { 
+        --card-bg: linear-gradient(135deg, #dbeafe 0%, #93c5fd 100%); 
+        --card-accent: #1877f2;
+        --icon-bg: #ffffff;
       }
 
       footer {
-        background: #2c3e50;
-        color: white;
+        background: #ffffff;
+        color: var(--text-secondary);
         text-align: center;
-        padding: 20px;
-        margin-top: 40px;
+        padding: 32px 24px;
+        margin-top: 0;
+        border-top: 1px solid var(--border-color);
       }
 
-      .status {
-        display: inline-block;
-        background: #10b981;
-        color: white;
-        padding: 5px 15px;
-        border-radius: 20px;
-        font-size: 0.9em;
-        margin-top: 10px;
+      footer p {
+        font-size: 13px;
+        font-weight: 400;
+        margin: 6px 0;
+      }
+
+      footer p:first-child {
+        color: var(--text-primary);
+        font-weight: 500;
+      }
+
+      footer p:last-child {
+        font-size: 12px;
+        color: var(--text-tertiary);
+      }
+
+      @media (max-width: 900px) {
+        .dashboard-header {
+          padding: 40px 24px;
+        }
+
+        .dashboard-header h1 {
+          font-size: 28px;
+        }
+
+        .dashboard-header p {
+          font-size: 14px;
+        }
+
+        .api-categories {
+          padding: 24px 20px;
+          gap: 16px;
+          grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        }
+
+        .category-card {
+          padding: 24px 20px;
+        }
+      }
+
+      @media (max-width: 600px) {
+        .dashboard-header {
+          padding: 32px 20px;
+        }
+
+        .dashboard-header h1 {
+          font-size: 24px;
+        }
+
+        .dashboard-header p {
+          font-size: 13px;
+        }
+
+        .nav-section {
+          padding: 24px 20px;
+        }
+
+        .api-categories {
+          padding: 20px 16px;
+          grid-template-columns: 1fr;
+          gap: 12px;
+        }
+
+        .icon {
+          font-size: 36px;
+        }
+
+        .category-card h2 {
+          font-size: 17px;
+        }
+
+        .category-card p {
+          font-size: 12px;
+        }
       }
     </style>
   </head>
   <body>
     <div class="container">
-      <header>
-        <h1>🚀 LinkedIn Bright Data API</h1>
-        <p>Access LinkedIn data through Bright Data's powerful APIs</p>
-        <div class="status">● Server Online</div>
+      <header class="dashboard-header">
+        <h1>Bright Data Scraper Hub</h1>
+        <p>Multi-Platform Data Extraction & API Integration</p>
+        <div class="status-badge">
+          <span class="status-dot"></span>
+          <span>Server Active</span>
+        </div>
       </header>
 
       <div class="nav-section">
-        <h3 style="text-align: center; color: #2c3e50">
-          Select an API Category
-        </h3>
+        <h3>Data Extraction Services</h3>
+        <p>Select a platform to begin data collection</p>
       </div>
 
+      <div class="api-categories"
       <div class="api-categories">
+        <!-- LinkedIn Section -->
         <a href="people-profiles.html" class="category-card people">
           <div class="icon">👥</div>
           <h2>People Profiles</h2>
-          <p>Collect and discover LinkedIn user profiles</p>
+          <p>Extract LinkedIn user profiles & professional data</p>
         </a>
 
         <a href="company-info.html" class="category-card company">
           <div class="icon">🏢</div>
           <h2>Company Info</h2>
-          <p>Get detailed company information</p>
+          <p>Comprehensive company intelligence & insights</p>
         </a>
 
         <a href="job-listings.html" class="category-card jobs">
           <div class="icon">💼</div>
           <h2>Job Listings</h2>
-          <p>Search and collect job postings</p>
+          <p>Search & analyze job postings worldwide</p>
         </a>
 
         <a href="posts.html" class="category-card posts">
           <div class="icon">📝</div>
           <h2>Posts</h2>
-          <p>Collect LinkedIn posts and content</p>
+          <p>Collect & monitor LinkedIn content streams</p>
         </a>
 
         <a href="people-search.html" class="category-card search">
           <div class="icon">🔍</div>
           <h2>People Search</h2>
-          <p>Search for LinkedIn profiles</p>
+          <p>Advanced LinkedIn profile discovery</p>
         </a>
 
         <a href="utilities.html" class="category-card utilities">
           <div class="icon">⚙️</div>
           <h2>Utilities</h2>
-          <p>Snapshot retrieval and health checks</p>
+          <p>Snapshots, health checks & system tools</p>
         </a>
-        <!-- Add these inside the .api-categories div -->
 
-        <!-- Google Maps -->
+        <!-- Social Media & Maps Section -->
         <a href="maps-scraper.html" class="category-card maps">
           <div class="icon">🗺️</div>
           <h2>Google Maps</h2>
-          <p>Scrape Google Maps places</p>
+          <p>Extract location data & business listings</p>
         </a>
 
-        <!-- YouTube -->
         <a href="youtube-scraper.html" class="category-card youtube">
           <div class="icon">▶️</div>
           <h2>YouTube</h2>
-          <p>Scrape YouTube videos and channels</p>
+          <p>Video metadata, channels & analytics</p>
         </a>
 
-        <!-- Instagram -->
         <a href="instagram-scraper.html" class="category-card instagram">
           <div class="icon">📸</div>
           <h2>Instagram</h2>
-          <p>Scrape Instagram profiles, posts, and reels</p>
+          <p>Profiles, posts, reels & engagement data</p>
         </a>
 
-        <!-- Facebook -->
         <a href="facebook-scraper.html" class="category-card facebook">
-          <div class="icon">👥</div>
+          <div class="icon">�</div>
           <h2>Facebook</h2>
-          <p>Scrape Facebook posts, profiles, and events</p>
+          <p>Posts, profiles, events & reviews scraper</p>
         </a>
       </div>
 
       <footer>
-        <p>&copy; 2025 LinkedIn Bright Data API | Built with Express.js</p>
-        <p style="margin-top: 10px; font-size: 0.9em; opacity: 0.8">
-          Server running on port 3000
-        </p>
+        <p>Bright Data API Integration Platform</p>
+        <p>Powered by Express.js • API v1.0</p>
+        <p>&copy; 2025 All Rights Reserved</p>
       </footer>
     </div>
 
     <script>
-      // Check server health on page load
+      // Server health check
+      const statusBadge = document.querySelector('.status-badge');
+      const statusDot = document.querySelector('.status-dot');
+      
       fetch("/health")
         .then((response) => response.json())
         .then((data) => {
-          console.log("Server status:", data.status);
+          console.log("✅ Server status:", data.status);
+          statusDot.style.background = "#0f9d58";
         })
         .catch((error) => {
-          console.error("Server check failed:", error);
-          document.querySelector(".status").style.background = "#ef4444";
-          document.querySelector(".status").textContent = "● Server Offline";
+          console.error("❌ Server check failed:", error);
+          statusDot.style.background = "#d93025";
+          statusBadge.querySelector('span:last-child').textContent = "Server Offline";
+          statusBadge.style.background = "rgba(217, 48, 37, 0.15)";
         });
     </script>
   </body>
