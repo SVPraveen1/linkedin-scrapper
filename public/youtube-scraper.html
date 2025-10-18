@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YouTube Scraper</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>▶️ YouTube Scraper</h1>
+      <p>Scrape YouTube videos and channels</p>
+      <a href="index.html" class="back-btn">← Back to Dashboard</a>
+    </header>
+
+    <div class="content">
+      <!-- Video Scraper -->
+      <div class="api-section">
+        <h2>Scrape YouTube Videos by URL</h2>
+        <form id="youtubeVideoForm">
+          <div class="form-group">
+            <label>YouTube Video URLs (one per line) *</label>
+            <textarea id="yt_video_urls" rows="6" required></textarea>
+          </div>
+          <button type="submit" class="btn-primary">Scrape Videos</button>
+        </form>
+        <div id="ytVideoResult" class="result-box"></div>
+      </div>
+
+      <!-- Channel About Scraper -->
+      <div class="api-section">
+        <h2>Scrape YouTube Channel About Pages</h2>
+        <form id="youtubeAboutForm">
+          <div class="form-group">
+            <label>Channel About URLs (one per line) *</label>
+            <textarea id="yt_about_urls" rows="6" placeholder="https://www.youtube.com/@MrBeast/about" required></textarea>
+          </div>
+          <button type="submit" class="btn-primary">Scrape Channels</button>
+        </form>
+        <div id="ytAboutResult" class="result-box"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Video scraper
+    document.getElementById('youtubeVideoForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const resultDiv = document.getElementById('ytVideoResult');
+      resultDiv.innerHTML = '<p class="loading">⏳ Scraping...</p>';
+
+      const urls = document.getElementById('yt_video_urls').value.split('\n').map(u => u.trim()).filter(u => u);
+
+      try {
+        const response = await fetch('/youtube-scraper/collect-by-url', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ urls })
+        });
+        const data = await response.json();
+        resultDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+      } catch (error) {
+        resultDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+      }
+    });
+
+    // About page scraper
+    document.getElementById('youtubeAboutForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const resultDiv = document.getElementById('ytAboutResult');
+      resultDiv.innerHTML = '<p class="loading">⏳ Scraping...</p>';
+
+      const urls = document.getElementById('yt_about_urls').value.split('\n').map(u => u.trim()).filter(u => u);
+
+      try {
+        const response = await fetch('/youtube-scraper/about-by-url', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ urls })
+        });
+        const data = await response.json();
+        resultDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+      } catch (error) {
+        resultDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+      }
+    });
+  </script>
+</body>
+</html>

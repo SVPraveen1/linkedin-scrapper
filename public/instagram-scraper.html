@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Instagram Scraper</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>📸 Instagram Scraper</h1>
+        <p>Scrape Instagram profiles, posts, and reels</p>
+        <a href="index.html" class="back-btn">← Back to Dashboard</a>
+      </header>
+
+      <div class="content">
+        <!-- Profile by URL -->
+        <div class="api-section">
+          <h2>Scrape Instagram Profiles by URL</h2>
+          <form id="igProfileForm">
+            <div class="form-group">
+              <label>Profile URLs (one per line) *</label>
+              <textarea
+                id="ig_profile_urls"
+                rows="4"
+                placeholder="https://www.instagram.com/username/"
+                required
+              ></textarea>
+            </div>
+            <button type="submit" class="btn-primary">Scrape Profiles</button>
+          </form>
+          <div id="igProfileResult" class="result-box"></div>
+        </div>
+
+        <!-- Posts by URL -->
+        <div class="api-section">
+          <h2>Scrape Instagram Posts by URL</h2>
+          <form id="igPostForm">
+            <div class="form-group">
+              <label>Post URLs (one per line) *</label>
+              <textarea id="ig_post_urls" rows="4" required></textarea>
+            </div>
+            <button type="submit" class="btn-primary">Scrape Posts</button>
+          </form>
+          <div id="igPostResult" class="result-box"></div>
+        </div>
+
+        <!-- Reels by URL -->
+        <div class="api-section">
+          <h2>Scrape Instagram Reels by URL</h2>
+          <form id="igReelForm">
+            <div class="form-group">
+              <label>Reel URLs (one per line) *</label>
+              <textarea id="ig_reel_urls" rows="4" required></textarea>
+            </div>
+            <button type="submit" class="btn-primary">Scrape Reels</button>
+          </form>
+          <div id="igReelResult" class="result-box"></div>
+        </div>
+        <!-- Profile by username -->
+        <section class="api-section">
+          <h2>Discover Instagram Profiles by Username</h2>
+          <form id="igDiscoverUsernameForm">
+            <textarea
+              id="ig_usernames"
+              rows="3"
+              placeholder="Username, one per line"
+              required
+            ></textarea>
+            <button type="submit">Discover Profiles</button>
+          </form>
+          <div id="igDiscoverUsernameResult"></div>
+        </section>
+      </div>
+    </div>
+
+    <script>
+      // Profile scraper
+      document
+        .getElementById("igProfileForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const resultDiv = document.getElementById("igProfileResult");
+          resultDiv.innerHTML = '<p class="loading">⏳ Scraping...</p>';
+          const urls = document
+            .getElementById("ig_profile_urls")
+            .value.split("\n")
+            .map((u) => u.trim())
+            .filter((u) => u);
+          try {
+            const response = await fetch("/instagram-profile/collect-by-url", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ urls }),
+            });
+            const data = await response.json();
+            resultDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+          } catch (error) {
+            resultDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+          }
+        });
+
+      // Post scraper
+      document
+        .getElementById("igPostForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const resultDiv = document.getElementById("igPostResult");
+          resultDiv.innerHTML = '<p class="loading">⏳ Scraping...</p>';
+          const urls = document
+            .getElementById("ig_post_urls")
+            .value.split("\n")
+            .map((u) => u.trim())
+            .filter((u) => u);
+          try {
+            const response = await fetch("/instagram-post/collect-by-url", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ urls }),
+            });
+            const data = await response.json();
+            resultDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+          } catch (error) {
+            resultDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+          }
+        });
+
+      // Reel scraper
+      document
+        .getElementById("igReelForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const resultDiv = document.getElementById("igReelResult");
+          resultDiv.innerHTML = '<p class="loading">⏳ Scraping...</p>';
+          const urls = document
+            .getElementById("ig_reel_urls")
+            .value.split("\n")
+            .map((u) => u.trim())
+            .filter((u) => u);
+          try {
+            const response = await fetch("/instagram-reels/collect-by-url", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ urls }),
+            });
+            const data = await response.json();
+            resultDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+          } catch (error) {
+            resultDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+          }
+        });
+
+      // Discover profiles by username
+      document
+        .getElementById("igDiscoverUsernameForm")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+          const usernames = document
+            .getElementById("ig_usernames")
+            .value.split("\n")
+            .map((u) => u.trim())
+            .filter(Boolean);
+          // const user_names = usernames.map((user_name) => ({ user_name }));
+          const user_names = usernames; // no need to map to objects
+          const res = await fetch("/instagram-profile/discover-by-username", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ user_names }),
+          });
+          document.getElementById(
+            "igDiscoverUsernameResult"
+          ).innerHTML = `<pre>${JSON.stringify(
+            await res.json(),
+            null,
+            2
+          )}</pre>`;
+        });
+    </script>
+  </body>
+</html>

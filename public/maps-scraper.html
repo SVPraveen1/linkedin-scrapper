@@ -1,32 +1,65 @@
-<!-- public/maps-scraper.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Google Maps Scraper</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <h1>Google Maps Scraper</h1>
-  <form id="maps-form">
-    <textarea id="urls" placeholder="Paste each Google Maps place URL on a new line"></textarea>
-    <button type="submit">Scrape</button>
-  </form>
-  <pre id="results"></pre>
+  <div class="container">
+    <header>
+      <h1>🗺️ Google Maps Scraper</h1>
+      <p>Scrape Google Maps place information</p>
+      <a href="index.html" class="back-btn">← Back to Dashboard</a>
+    </header>
+
+    <div class="content">
+      <div class="api-section">
+        <h2>Scrape Maps Places by URL</h2>
+        <p class="description">Enter Google Maps place URLs to scrape details</p>
+
+        <form id="mapsForm">
+          <div class="form-group">
+            <label for="maps_urls">Google Maps URLs (one per line) *</label>
+            <textarea
+              id="maps_urls"
+              rows="6"
+              placeholder="https://www.google.com/maps/place/..."
+              required
+            ></textarea>
+          </div>
+          <button type="submit" class="btn-primary">Scrape Places</button>
+        </form>
+
+        <div id="mapsResult" class="result-box"></div>
+      </div>
+    </div>
+  </div>
 
   <script>
-    document.getElementById('maps-form').addEventListener('submit', async function(e) {
+    document.getElementById('mapsForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const urls = document.getElementById('urls').value.split('\n').map(u => u.trim()).filter(u => u);
+      const resultDiv = document.getElementById('mapsResult');
+      resultDiv.innerHTML = '<p class="loading">⏳ Scraping...</p>';
 
-      const res = await fetch('/scrape/maps', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ urls })
-      });
+      const urls = document.getElementById('maps_urls').value
+        .split('\n')
+        .map(u => u.trim())
+        .filter(u => u);
 
-      const data = await res.json();
-      document.getElementById('results').textContent = JSON.stringify(data, null, 2);
+      try {
+        const response = await fetch('/maps-scraper/collect-by-url', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ urls })
+        });
+
+        const data = await response.json();
+        resultDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+      } catch (error) {
+        resultDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+      }
     });
   </script>
 </body>

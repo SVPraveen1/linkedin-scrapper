@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Facebook Scraper</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>👥 Facebook Scraper</h1>
+        <a href="index.html" class="back-btn">← Back to Dashboard</a>
+      </header>
+      <div class="content">
+        <!-- 1. Profile Posts by URL/Date -->
+        <section class="api-section">
+          <h2>Profile Posts by URL (with options)</h2>
+          <form id="fbProfilePostsForm">
+            <textarea
+              id="fb_profile_urls"
+              rows="3"
+              placeholder="Profile URLs..."
+              required
+            ></textarea>
+            <input
+              type="number"
+              id="fb_num_posts"
+              min="1"
+              placeholder="Number of posts (optional)"
+            />
+            <input
+              type="text"
+              id="fb_exclude_posts"
+              placeholder="Posts to exclude (comma-separated IDs)"
+            />
+            <input
+              type="text"
+              id="fb_start_date"
+              placeholder="Start Date (MM-DD-YYYY)"
+            />
+            <input
+              type="text"
+              id="fb_end_date"
+              placeholder="End Date (MM-DD-YYYY)"
+            />
+            <button type="submit">Scrape Profile Posts</button>
+          </form>
+          <div id="fbProfilePostsResult"></div>
+        </section>
+
+        <!-- 2. Discover Posts by Username (with Dates) -->
+        <section class="api-section">
+          <h2>Discover Posts by Username</h2>
+          <form id="fbDiscoverUsernameForm">
+            <textarea
+              id="fb_usernames"
+              rows="3"
+              placeholder="Username, one per line"
+              required
+            ></textarea>
+            <input
+              type="text"
+              id="fb_discover_start_date"
+              placeholder="Start Date (MM-DD-YYYY)"
+            />
+            <input
+              type="text"
+              id="fb_discover_end_date"
+              placeholder="End Date (MM-DD-YYYY)"
+            />
+            <button type="submit">Discover Posts</button>
+          </form>
+          <div id="fbDiscoverUsernameResult"></div>
+        </section>
+
+        <!-- 3. Posts by URL -->
+        <section class="api-section">
+          <h2>Posts by Post URL</h2>
+          <form id="fbPostByUrlForm">
+            <textarea
+              id="fb_post_urls"
+              rows="3"
+              placeholder="Post URLs..."
+              required
+            ></textarea>
+            <button type="submit">Scrape FB Posts</button>
+          </form>
+          <div id="fbPostByUrlResult"></div>
+        </section>
+
+        <!-- 4. Events by URL -->
+        <section class="api-section">
+          <h2>Events by URL</h2>
+          <form id="fbEventsByUrlForm">
+            <textarea
+              id="fb_event_urls"
+              rows="3"
+              placeholder="Event URLs..."
+              required
+            ></textarea>
+            <button type="submit">Scrape Events</button>
+          </form>
+          <div id="fbEventsByUrlResult"></div>
+        </section>
+
+        <!-- 5. Discover Events by Venue -->
+        <section class="api-section">
+          <h2>Discover Events by Venue URL</h2>
+          <form id="fbDiscoverVenueForm">
+            <input
+              type="text"
+              id="fb_venue_url"
+              placeholder="Venue events URL..."
+              required
+            />
+            <input type="checkbox" id="fb_upcoming_only" />
+            <label for="fb_upcoming_only">Upcoming Events Only</label>
+            <button type="submit">Discover Events by Venue</button>
+          </form>
+          <div id="fbDiscoverVenueResult"></div>
+        </section>
+
+        <!-- 7. Reviews by URL and count -->
+        <section class="api-section">
+          <h2>Reviews by Page URL</h2>
+          <form id="fbReviewsForm">
+            <textarea
+              id="fb_review_urls"
+              rows="3"
+              placeholder="Review Page URLs, one per line..."
+              required
+            ></textarea>
+            <input
+              type="number"
+              id="fb_num_reviews"
+              min="1"
+              placeholder="Number of reviews (per page)"
+            />
+            <button type="submit">Scrape Reviews</button>
+          </form>
+          <div id="fbReviewsResult"></div>
+        </section>
+
+        <!-- 8. Basic Profile Scraper -->
+        <section class="api-section">
+          <h2>Basic Profile by URL</h2>
+          <form id="fbBasicProfileForm">
+            <textarea
+              id="fb_basic_profile_urls"
+              rows="3"
+              placeholder="FB Profile URLs..."
+              required
+            ></textarea>
+            <button type="submit">Scrape Profile</button>
+          </form>
+          <div id="fbBasicProfileResult"></div>
+        </section>
+      </div>
+    </div>
+    <!-- scripts below; attach for each form handler -->
+    <script>
+      // 1. Profile Posts by URL/Date
+      document
+        .getElementById("fbProfilePostsForm")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+          const urls = document
+            .getElementById("fb_profile_urls")
+            .value.split("\n")
+            .map((u) => u.trim())
+            .filter(Boolean);
+          const num_of_posts = document.getElementById("fb_num_posts").value;
+          const posts_to_not_include = document.getElementById(
+            "fb_exclude_posts"
+          ).value
+            ? document
+                .getElementById("fb_exclude_posts")
+                .value.split(",")
+                .map((id) => id.trim())
+                .filter(Boolean)
+            : [];
+          const start_date = document.getElementById("fb_start_date").value;
+          const end_date = document.getElementById("fb_end_date").value;
+          const inputs = urls.map((url) => ({
+            url,
+            num_of_posts: num_of_posts || undefined,
+            posts_to_not_include: posts_to_not_include.length
+              ? posts_to_not_include
+              : undefined,
+            start_date: start_date || undefined,
+            end_date: end_date || undefined,
+          }));
+          // Remove undefined keys for cleaner payload
+          inputs.forEach((obj) =>
+            Object.keys(obj).forEach(
+              (key) => obj[key] === undefined && delete obj[key]
+            )
+          );
+          const res = await fetch("/facebook-profile-posts/collect-by-url", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ inputs }),
+          });
+          document.getElementById(
+            "fbProfilePostsResult"
+          ).innerHTML = `<pre>${JSON.stringify(
+            await res.json(),
+            null,
+            2
+          )}</pre>`;
+        });
+
+      document
+        .getElementById("fbDiscoverUsernameForm")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+
+          const usernames = document
+            .getElementById("fb_usernames")
+            .value.split("\n")
+            .map((u) => u.trim())
+            .filter(Boolean);
+
+          const start_date = document.getElementById(
+            "fb_discover_start_date"
+          ).value;
+          const end_date = document.getElementById(
+            "fb_discover_end_date"
+          ).value;
+
+          const payload = {
+            user_names: usernames,
+            start_date,
+            end_date,
+          };
+
+          const res = await fetch(
+            "/facebook-profile-posts/discover-by-username",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload),
+            }
+          );
+
+          const result = await res.json();
+          document.getElementById(
+            "fbDiscoverUsernameResult"
+          ).innerHTML = `<pre>${JSON.stringify(result, null, 2)}</pre>`;
+        });
+      // 3. Posts by URL
+      document
+        .getElementById("fbPostByUrlForm")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+          const urls = document
+            .getElementById("fb_post_urls")
+            .value.split("\n")
+            .map((u) => u.trim())
+            .filter(Boolean);
+          const res = await fetch("/facebook-post/collect-by-url", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ urls }),
+          });
+          document.getElementById(
+            "fbPostByUrlResult"
+          ).innerHTML = `<pre>${JSON.stringify(
+            await res.json(),
+            null,
+            2
+          )}</pre>`;
+        });
+      // 4. Events by URL
+      document
+        .getElementById("fbEventsByUrlForm")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+          const urls = document
+            .getElementById("fb_event_urls")
+            .value.split("\n")
+            .map((u) => u.trim())
+            .filter(Boolean);
+          const res = await fetch("/facebook-event/collect-by-url", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ urls }),
+          });
+          document.getElementById(
+            "fbEventsByUrlResult"
+          ).innerHTML = `<pre>${JSON.stringify(
+            await res.json(),
+            null,
+            2
+          )}</pre>`;
+        });
+      // 5. Discover Events by Venue
+      document
+        .getElementById("fbDiscoverVenueForm")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+          const url = document.getElementById("fb_venue_url").value;
+          const upcoming_events_only =
+            document.getElementById("fb_upcoming_only").checked;
+          const inputs = [{ url, upcoming_events_only }];
+          const res = await fetch("/facebook-event/discover-by-venue", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ inputs }),
+          });
+          document.getElementById(
+            "fbDiscoverVenueResult"
+          ).innerHTML = `<pre>${JSON.stringify(
+            await res.json(),
+            null,
+            2
+          )}</pre>`;
+        });
+
+      // 7. Reviews by URL/num_of_reviews
+      document
+        .getElementById("fbReviewsForm")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+          const urls = document
+            .getElementById("fb_review_urls")
+            .value.split("\n")
+            .map((u) => u.trim())
+            .filter(Boolean);
+          const num_of_reviews =
+            document.getElementById("fb_num_reviews").value;
+          const inputs = urls.map((url) => ({
+            url,
+            num_of_reviews: num_of_reviews || undefined,
+          }));
+          const res = await fetch("/facebook-reviews/collect-by-url", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ inputs }),
+          });
+          document.getElementById(
+            "fbReviewsResult"
+          ).innerHTML = `<pre>${JSON.stringify(
+            await res.json(),
+            null,
+            2
+          )}</pre>`;
+        });
+      // 8. Basic Profile by URL
+      document
+        .getElementById("fbBasicProfileForm")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+          const urls = document
+            .getElementById("fb_basic_profile_urls")
+            .value.split("\n")
+            .map((u) => u.trim())
+            .filter(Boolean);
+          const res = await fetch("/facebook-basic-profile/collect-by-url", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ urls }),
+          });
+          document.getElementById(
+            "fbBasicProfileResult"
+          ).innerHTML = `<pre>${JSON.stringify(
+            await res.json(),
+            null,
+            2
+          )}</pre>`;
+        });
+    </script>
+  </body>
+</html>

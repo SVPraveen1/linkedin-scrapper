@@ -285,6 +285,34 @@
       ]
     },
     {
+      "name": "map-scrapper",
+      "item": [
+        {
+          "name": "Collect by URL",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"search_url\": \"https://www.linkedin.com/search/results/people/?keywords=ceo\",\n  \"li_at_cookie\": \"YOUR_LI_AT_COOKIE_HERE\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/people-search/collect-by-url",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["people-search", "collect-by-url"]
+            }
+          }
+        }
+      ]
+    },
+    {
       "name": "Utilities",
       "item": [
         {
