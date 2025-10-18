@@ -2,25 +2,42 @@ const express = require("express");
 const cors = require("cors");
 const app = express();
 const axios = require("axios");
+app.use(express.json());
+
 
 // Configuration
 const BASE_URL = "https://api.brightdata.com";
 const ACCESS_TOKEN =
-  "8843602450317db399525247cd90e37b0565b3f3449a00401ed0c7b18a97a9a3";
+  "383b76f4d071359c7852963285976a5147145b590a5eebe5594ae1fb1fd5be8b";
 
 // Dataset IDs for different LinkedIn data types
 const DATASETS = {
-  PEOPLE_PROFILES_BY_URL: "gd_l1viktl72bvl7bjuj0", // Collect by URL
-  PEOPLE_PROFILES_BY_NAME: "gd_l1viktl72bvl7bjuj0", // Discover by name
-  COMPANY_INFO_BY_URL: "gd_l1vikfnt1wgvvqz95w", // Replace with actual ID
-  JOB_LISTINGS_BY_URL: "gd_lpfll7v5hcqtkxl6l", // Replace with actual ID
-  JOB_LISTINGS_BY_KEYWORD: "gd_lpfll7v5hcqtkxl6l", // Replace with actual ID
-  JOB_LISTINGS_BY_URL_DISCOVER: "gd_lpfll7v5hcqtkxl6l", // Replace with actual ID
-  POSTS_BY_URL: "gd_lyy3tktm25m4avu764", // Replace with actual ID
-  POSTS_BY_COMPANY_URL: "gd_lyy3tktm25m4avu764", // Replace with actual ID
-  POSTS_BY_PROFILE_URL: "gd_lyy3tktm25m4avu764", // Replace with actual ID
-  POSTS_BY_URL_DISCOVER: "gd_lyy3tktm25m4avu764", // Replace with actual ID
-  PEOPLE_SEARCH_BY_URL: "gd_m8d03he47z8nwb5xc", // Replace with actual ID
+  PEOPLE_PROFILES_BY_URL: "gd_l1viktl72bvl7bjuj0", 
+  PEOPLE_PROFILES_BY_NAME: "gd_l1viktl72bvl7bjuj0", 
+  COMPANY_INFO_BY_URL: "gd_l1vikfnt1wgvvqz95w",  
+  JOB_LISTINGS_BY_URL: "gd_lpfll7v5hcqtkxl6l",  
+  JOB_LISTINGS_BY_KEYWORD: "gd_lpfll7v5hcqtkxl6l",  
+  JOB_LISTINGS_BY_URL_DISCOVER: "gd_lpfll7v5hcqtkxl6l",  
+  POSTS_BY_URL: "gd_lyy3tktm25m4avu764",  
+  POSTS_BY_COMPANY_URL: "gd_lyy3tktm25m4avu764",  
+  POSTS_BY_PROFILE_URL: "gd_lyy3tktm25m4avu764",  
+  POSTS_BY_URL_DISCOVER: "gd_lyy3tktm25m4avu764",  
+  PEOPLE_SEARCH_BY_URL: "gd_m8d03he47z8nwb5xc",  
+  GOOGLEMAPSBYURL: "gd_m8ebnr0q2qlklc02fz",
+  YOUTUBEBYURL: "gd_lk56epmy2i5g7lzu0k",
+  YOUTUBEABOUTBYURL: "gd_lk538t2k2p1k3oos71",
+  INSTAGRAM_PROFILE_BY_URL: "gd_l1vikfch901nx3by4",      // scraping by profile URL
+  INSTAGRAM_DISCOVER_BY_USERNAME: "gd_l1vikfch901nx3by4",// discover by username, same as above
+  INSTAGRAM_REEL_BY_URL: "gd_lyclm20il4r5helnj",
+  INSTAGRAM_POST_BY_URL: "gd_lk5ns7kz21pck8jpis",
+  FACEBOOK_PROFILE_POSTS_BY_URL: "gd_lkaxegm826bjpoo9m5",
+  FACEBOOK_DISCOVER_BY_USERNAME: "gd_lkaxegm826bjpoo9m5", // same as above, with discover params
+  FACEBOOK_POST_BY_URL: "gd_lyclm1571iy3mv57zw",
+  FACEBOOK_EVENT_BY_URL: "gd_m14sd0to1jz48ppm51",
+  FACEBOOK_EVENT_DISCOVER_BY_VENUE: "gd_m14sd0to1jz48ppm51", // same as event dataset, with discover params
+  FACEBOOK_REELS_PROFILE_BY_URL: "gd_lyclm3ey2q6rww027t",
+  FACEBOOK_REVIEWS_BY_URL: "gd_m0dtqpiu1mbcyc2g86",
+  FACEBOOK_BASIC_PROFILE_BY_URL: "gd_mf0urb782734ik94dz"
 };
 
 // Enable CORS for all routes
@@ -574,6 +591,331 @@ app.get("/get-snapshot/:snapshotId", async (req, res) => {
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });
 });
+
+// 12. Google Maps Scraper - Collect by URLs
+app.post('/maps-scraper/collect-by-url', async (req, res) => {
+  try {
+    const { urls } = req.body; // Expecting { urls: [array of Google Maps URLs] }
+
+    if (!urls || !Array.isArray(urls) || urls.length === 0) {
+      return res.status(400).json({ error: "An array of Google Maps place URLs is required." });
+    }
+
+    // Prepare input as required by Bright Data
+    const input = urls.map(url => ({ url }));
+
+    // Construct API URL for Bright Data
+    let apiUrl = `${BASE_URL}/datasets/v3/scrape?dataset_id=${DATASETS.GOOGLEMAPSBYURL}&notify=false&include_errors=true`;
+
+    // Make Axios POST request to Bright Data
+    const response = await axios.post(
+      apiUrl,
+      JSON.stringify({ input }),
+      {
+        headers: {
+          "Authorization": `Bearer ${ACCESS_TOKEN}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    console.log("GOOGLE MAPS SCRAPER:", JSON.stringify(response.data, null, 2));
+    res.json({ success: true, data: response.data });
+  } catch (error) {
+    console.error("Bright Data Error:", error.response?.data || error.message);
+    res.status(500).json({ error: error.response?.data || error.message });
+  }
+});
+
+// 13. YouTube Scraper - Collect by URL
+// YOUTUBE SCRAPER - Collect by URL
+app.post('/youtube-scraper/collect-by-url', async (req, res) => {
+  try {
+    const { urls } = req.body; // Expects { urls: [...] }
+    if (!urls || !Array.isArray(urls) || urls.length === 0) {
+      return res.status(400).json({ error: "An array of YouTube video URLs is required." });
+    }
+
+    const input = urls.map(url => ({ url, country: "", transcription_language: "" }));
+    let apiUrl = `${BASE_URL}/datasets/v3/scrape?dataset_id=${DATASETS.YOUTUBEBYURL}&notify=false&include_errors=true`;
+
+    const response = await axios.post(
+      apiUrl,
+      JSON.stringify({ input }),
+      {
+        headers: {
+          "Authorization": `Bearer ${ACCESS_TOKEN}`,
+          "Content-Type": "application/json"
+        }
+      }
+    );
+    res.json({ success: true, data: response.data });
+  } catch (error) {
+    res.status(500).json({ error: error.response?.data || error.message });
+  }
+});
+
+// 14. YouTube About Page Scraper - Collect by Channel URLs
+app.post('/youtube-scraper/about-by-url', async (req, res) => {
+  try {
+    const { urls } = req.body; // Expecting { urls: ["https://www.youtube.com/@MrBeast/about", ...] }
+
+    if (!urls || !Array.isArray(urls) || urls.length === 0) {
+      return res.status(400).json({ error: "An array of YouTube channel About page URLs is required." });
+    }
+
+    // Prepare input array for Bright Data API
+    const input = urls.map(url => ({ url }));
+
+    // Compose API URL
+    let apiUrl = `${BASE_URL}/datasets/v3/scrape?dataset_id=${DATASETS.YOUTUBEABOUTBYURL}&notify=false&include_errors=true`;
+
+    // Send POST request to Bright Data API
+    const response = await axios.post(
+      apiUrl,
+      JSON.stringify({ input }),
+      {
+        headers: {
+          "Authorization": `Bearer ${ACCESS_TOKEN}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    console.log("YOUTUBE ABOUT SCRAPER:", JSON.stringify(response.data, null, 2));
+    res.json({ success: true, data: response.data });
+  } catch (error) {
+    console.error("Bright Data Error:", error.response?.data || error.message);
+    res.status(500).json({ error: error.response?.data || error.message });
+  }
+});
+
+// 15. Instagram Profile Scraper - Collect by URL
+app.post('/instagram-profile/collect-by-url', async (req, res) => {
+  try {
+    const { urls } = req.body;
+    if (!urls || !Array.isArray(urls) || urls.length === 0) {
+      return res.status(400).json({ error: "Array of Instagram profile URLs required." });
+    }
+    const input = urls.map(url => ({ url }));
+    let apiUrl = `${BASE_URL}/datasets/v3/scrape?dataset_id=${DATASETS.INSTAGRAM_PROFILE_BY_URL}&notify=false&include_errors=true`;
+    const response = await axios.post(
+      apiUrl,
+      JSON.stringify({ input }),
+      {
+        headers: {
+          "Authorization": `Bearer ${ ACCESS_TOKEN}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    res.json({ success: true, data: response.data });
+  } catch (error) {
+    res.status(500).json({ error: error.response?.data || error.message });
+  }
+});
+
+// 16. Instagram Profile Discover - by Username
+app.post('/instagram-profile/discover-by-username', async (req, res) => {
+  try {
+    const { user_names } = req.body; // Array of usernames
+    if (!user_names || !Array.isArray(user_names) || user_names.length === 0) {
+      return res.status(400).json({ error: "Array of Instagram usernames required." });
+    }
+    const input = user_names.map(user_name => ({ user_name }));
+    let apiUrl = `${BASE_URL}/datasets/v3/scrape?dataset_id=${DATASETS.INSTAGRAM_DISCOVER_BY_USERNAME}&notify=false&include_errors=true&type=discover_new&discover_by=user_name`;
+    const response = await axios.post(
+      apiUrl,
+      JSON.stringify({ input }),
+      {
+        headers: {
+          "Authorization": `Bearer ${ ACCESS_TOKEN}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    res.json({ success: true, data: response.data });
+  } catch (error) {
+    res.status(500).json({ error: error.response?.data || error.message });
+  }
+});
+
+// 17. Instagram Reels Scraper - Collect by URL
+app.post('/instagram-reels/collect-by-url', async (req, res) => {
+  try {
+    const { urls } = req.body;
+    if (!urls || !Array.isArray(urls) || urls.length === 0) {
+      return res.status(400).json({ error: "Array of Instagram reel URLs required." });
+    }
+    const input = urls.map(url => ({ url }));
+    let apiUrl = `${BASE_URL}/datasets/v3/scrape?dataset_id=${DATASETS.INSTAGRAM_REEL_BY_URL}&notify=false&include_errors=true`;
+    const response = await axios.post(
+      apiUrl,
+      JSON.stringify({ input }),
+      {
+        headers: {
+          "Authorization": `Bearer ${ ACCESS_TOKEN}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    res.json({ success: true, data: response.data });
+  } catch (error) {
+    res.status(500).json({ error: error.response?.data || error.message });
+  }
+});
+
+
+// 18. Instagram Post Scraper - Collect by Post URL
+app.post('/instagram-post/collect-by-url', async (req, res) => {
+  try {
+    const { urls } = req.body; // Expecting { urls: ["https://www.instagram.com/p/Cuf4s0MNqNr", ...] }
+    if (!urls || !Array.isArray(urls) || urls.length === 0) {
+      return res.status(400).json({ error: "Array of Instagram post URLs required." });
+    }
+    const input = urls.map(url => ({ url }));
+    let apiUrl = `${BASE_URL}/datasets/v3/scrape?dataset_id=${DATASETS.INSTAGRAM_POST_BY_URL}&notify=false&include_errors=true`;
+    const response = await axios.post(
+      apiUrl,
+      JSON.stringify({ input }),
+      {
+        headers: {
+          "Authorization": `Bearer ${ ACCESS_TOKEN}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    res.json({ success: true, data: response.data });
+  } catch (error) {
+    res.status(500).json({ error: error.response?.data || error.message });
+  }
+});
+
+
+// 1. Facebook profile posts scraper (by profile URL)
+app.post('/facebook-profile-posts/collect-by-url', async (req, res) => {
+  try {
+    const { inputs } = req.body; // array of objects: { url, num_of_posts, posts_to_not_include, start_date, end_date }
+    if (!inputs || !Array.isArray(inputs) || inputs.length === 0) {
+      return res.status(400).json({ error: "Input array required." });
+    }
+    let apiUrl = `${BASE_URL}/datasets/v3/scrape?dataset_id=${DATASETS.FACEBOOK_PROFILE_POSTS_BY_URL}&notify=false&include_errors=true`;
+    const response = await axios.post(apiUrl, JSON.stringify({ input: inputs }), {
+      headers: { "Authorization": `Bearer ${ACCESS_TOKEN}`, "Content-Type": "application/json" }
+    });
+    res.json({ success: true, data: response.data });
+  } catch (error) { res.status(500).json({ error: error.response?.data || error.message }); }
+});
+
+// 2. Facebook profile posts - discover by username
+app.post('/facebook-profile-posts/discover-by-username', async (req, res) => {
+  try {
+    const { user_names } = req.body;
+    if (!user_names || !Array.isArray(user_names) || user_names.length === 0) {
+      return res.status(400).json({ error: "Array of usernames required." });
+    }
+    const input = user_names.map(user_name => ({ user_name, start_date: "", end_date: "" }));
+    let apiUrl = `${BASE_URL}/datasets/v3/scrape?dataset_id=${DATASETS.FACEBOOK_DISCOVER_BY_USERNAME}&notify=false&include_errors=true&type=discover_new&discover_by=user_name`;
+    const response = await axios.post(
+      apiUrl, JSON.stringify({ input }),
+      { headers: { "Authorization": `Bearer ${ACCESS_TOKEN}`, "Content-Type": "application/json" } }
+    );
+    res.json({ success: true, data: response.data });
+  } catch (error) { res.status(500).json({ error: error.response?.data || error.message }); }
+});
+
+// 3. Facebook post scraper (by post URL)
+app.post('/facebook-post/collect-by-url', async (req, res) => {
+  try {
+    const { urls } = req.body;
+    if (!urls || !Array.isArray(urls) || urls.length === 0) {
+      return res.status(400).json({ error: "Array of post URLs required." });
+    }
+    const input = urls.map(url => ({ url }));
+    let apiUrl = `${BASE_URL}/datasets/v3/scrape?dataset_id=${DATASETS.FACEBOOK_POST_BY_URL}&notify=false&include_errors=true`;
+    const response = await axios.post(apiUrl, JSON.stringify({ input }),
+      { headers: { "Authorization": `Bearer ${ACCESS_TOKEN}`, "Content-Type": "application/json" } }
+    );
+    res.json({ success: true, data: response.data });
+  } catch (error) { res.status(500).json({ error: error.response?.data || error.message }); }
+});
+
+// 4. Facebook event (by URL)
+app.post('/facebook-event/collect-by-url', async (req, res) => {
+  try {
+    const { urls } = req.body;
+    if (!urls || !Array.isArray(urls) || urls.length === 0) {
+      return res.status(400).json({ error: "Array of event URLs required." });
+    }
+    const input = urls.map(url => ({ url }));
+    let apiUrl = `${BASE_URL}/datasets/v3/scrape?dataset_id=${DATASETS.FACEBOOK_EVENT_BY_URL}&notify=false&include_errors=true`;
+    const response = await axios.post(apiUrl, JSON.stringify({ input }),
+      { headers: { "Authorization": `Bearer ${ACCESS_TOKEN}`, "Content-Type": "application/json" } }
+    );
+    res.json({ success: true, data: response.data });
+  } catch (error) { res.status(500).json({ error: error.response?.data || error.message }); }
+});
+
+// 5. Facebook event discover by venue
+app.post('/facebook-event/discover-by-venue', async (req, res) => {
+  try {
+    const { inputs } = req.body; // input: [{ url, upcoming_events_only }]
+    if (!inputs || !Array.isArray(inputs) || inputs.length === 0) {
+      return res.status(400).json({ error: "Input array required." });
+    }
+    let apiUrl = `${BASE_URL}/datasets/v3/scrape?dataset_id=${DATASETS.FACEBOOK_EVENT_DISCOVER_BY_VENUE}&notify=false&include_errors=true&type=discover_new&discover_by=venue`;
+    const response = await axios.post(apiUrl, JSON.stringify({ input: inputs }),
+      { headers: { "Authorization": `Bearer ${ACCESS_TOKEN}`, "Content-Type": "application/json" } }
+    );
+    res.json({ success: true, data: response.data });
+  } catch (error) { res.status(500).json({ error: error.response?.data || error.message }); }
+});
+
+// 6. Facebook reels/profile scrape (by URL)
+app.post('/facebook-reels-profile/collect-by-url', async (req, res) => {
+  try {
+    const { inputs } = req.body;
+    if (!inputs || !Array.isArray(inputs) || inputs.length === 0) {
+      return res.status(400).json({ error: "Input array required." });
+    }
+    let apiUrl = `${BASE_URL}/datasets/v3/scrape?dataset_id=${DATASETS.FACEBOOK_REELS_PROFILE_BY_URL}&notify=false&include_errors=true`;
+    const response = await axios.post(apiUrl, JSON.stringify({ input: inputs }),
+      { headers: { "Authorization": `Bearer ${ACCESS_TOKEN}`, "Content-Type": "application/json" } }
+    );
+    res.json({ success: true, data: response.data });
+  } catch (error) { res.status(500).json({ error: error.response?.data || error.message }); }
+});
+
+// 7. Facebook reviews scrape (by URL)
+app.post('/facebook-reviews/collect-by-url', async (req, res) => {
+  try {
+    const { inputs } = req.body;
+    if (!inputs || !Array.isArray(inputs) || inputs.length === 0) {
+      return res.status(400).json({ error: "Input array required." });
+    }
+    let apiUrl = `${BASE_URL}/datasets/v3/scrape?dataset_id=${DATASETS.FACEBOOK_REVIEWS_BY_URL}&notify=false&include_errors=true`;
+    const response = await axios.post(apiUrl, JSON.stringify({ input: inputs }),
+      { headers: { "Authorization": `Bearer ${ACCESS_TOKEN}`, "Content-Type": "application/json" } }
+    );
+    res.json({ success: true, data: response.data });
+  } catch (error) { res.status(500).json({ error: error.response?.data || error.message }); }
+});
+
+// 8. Facebook basic profile scrape (by URL)
+app.post('/facebook-basic-profile/collect-by-url', async (req, res) => {
+  try {
+    const { urls } = req.body;
+    if (!urls || !Array.isArray(urls) || urls.length === 0) {
+      return res.status(400).json({ error: "Array of profile URLs required." });
+    }
+    const input = urls.map(url => ({ url }));
+    let apiUrl = `${BASE_URL}/datasets/v3/scrape?dataset_id=${DATASETS.FACEBOOK_BASIC_PROFILE_BY_URL}&notify=false&include_errors=true`;
+    const response = await axios.post(apiUrl, JSON.stringify({ input }),
+      { headers: { "Authorization": `Bearer ${ACCESS_TOKEN}`, "Content-Type": "application/json" } }
+    );
+    res.json({ success: true, data: response.data });
+  } catch (error) { res.status(500).json({ error: error.response?.data || error.message }); }
+});
+
+
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

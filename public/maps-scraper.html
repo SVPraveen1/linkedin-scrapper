@@ -1,0 +1,33 @@
+<!-- public/maps-scraper.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Google Maps Scraper</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <h1>Google Maps Scraper</h1>
+  <form id="maps-form">
+    <textarea id="urls" placeholder="Paste each Google Maps place URL on a new line"></textarea>
+    <button type="submit">Scrape</button>
+  </form>
+  <pre id="results"></pre>
+
+  <script>
+    document.getElementById('maps-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const urls = document.getElementById('urls').value.split('\n').map(u => u.trim()).filter(u => u);
+
+      const res = await fetch('/scrape/maps', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ urls })
+      });
+
+      const data = await res.json();
+      document.getElementById('results').textContent = JSON.stringify(data, null, 2);
+    });
+  </script>
+</body>
+</html>
